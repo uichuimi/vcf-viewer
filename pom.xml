@@ -28,6 +28,11 @@
             <artifactId>javafx-controls</artifactId>
             <version>15</version>
         </dependency>
+		<dependency>
+			<groupId>com.github.samtools</groupId>
+			<artifactId>htsjdk</artifactId>
+			<version>2.23.0</version>
+		</dependency>
     </dependencies>
 
 

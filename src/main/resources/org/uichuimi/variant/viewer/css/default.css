@@ -1,10 +1,63 @@
-root {
-    -fx-background-color: cornsilk;
+.root, .split-pane, .vbox, .hbox, .border-pane, .pane, .flow-pane,
+.grid-pane, .stack-pane, .tile-pane {
+	-fx-background-color: whitesmoke;
 }
 
+.scroll-bar:vertical, .scroll-bar:horizontal {
+}
+
+.scroll-bar:vertical .thumb, .scroll-bar:horizontal .thumb {
+	-fx-background-color: coral;
+}
+
+.scroll-bar:vertical .increment-arrow,
+.scroll-bar:vertical .decrement-arrow,
+.scroll-bar:horizontal .increment-arrow,
+.scroll-bar:horizontal .decrement-arrow {
+	-fx-background-color: coral;
+}
+
+.label, .text {
+	-fx-background-color: transparent;
+}
 .drag-over {
 	-fx-border-width: 3px;
 	-fx-border-radius: 15px;
 	-fx-border-color: darkgrey;
 	-fx-border-style: dashed;
+}
+
+.table-view, .table-view * {
+	-fx-background-color: transparent;
+}
+
+.table-view .column-header-background {
+	-fx-border-width: 0 0 2 0;
+	-fx-border-color: darkgrey;
+	-fx-font-weight: bold;
+	-fx-padding: 5;
+}
+
+.table-view .table-row-cell {
+	-fx-border-width: 0 0 2 0;
+	-fx-border-color: lightgrey;
+}
+
+.table-view .table-row-cell:empty {
+	-fx-border-width: 0;
+}
+
+.table-view .table-row-cell:selected {
+	-fx-background-color: Coral;
+}
+
+.table-view .table-column {
+	-fx-alignment: center;
+	/*-fx-padding: 5px;*/
+	-fx-pref-height: 32px;
+	-fx-border-width: 0;
+}
+
+.split-pane-divider {
+	-fx-pref-width: 2;
 }
