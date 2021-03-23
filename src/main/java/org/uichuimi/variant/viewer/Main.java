@@ -22,7 +22,7 @@ public class Main extends Application {
 		Scene scene = new Scene(root);
 		scene.getStylesheets().add(getClass().getResource("css/default.css").toExternalForm());
 
-		stage.setTitle("JavaFX and Gradle");
+		stage.setTitle("VCF viewer");
 		stage.setScene(scene);
 		window = stage.getOwner();
 		stage.show();

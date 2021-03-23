@@ -5,6 +5,8 @@
 			xmlns:fx="http://javafx.com/fxml"
 			fx:controller="org.uichuimi.variant.viewer.components.MainView"
 			fx:id="center"
+			prefWidth="800"
+			prefHeight="400"
 >
 	<center>
 		<fx:include source="welcome.fxml"/>

@@ -3,8 +3,8 @@ root {
 }
 
 .drag-over {
-	-fx-border-width: 2px;
-	-fx-border-radius: 5px;
+	-fx-border-width: 3px;
+	-fx-border-radius: 15px;
 	-fx-border-color: darkgrey;
 	-fx-border-style: dashed;
 }

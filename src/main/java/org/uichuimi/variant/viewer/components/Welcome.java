@@ -1,9 +1,10 @@
 package org.uichuimi.variant.viewer.components;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import org.uichuimi.variant.viewer.Main;
 
@@ -16,7 +17,7 @@ public class Welcome {
 	public static final String DRAG_OVER = "drag-over";
 
 	@FXML
-	private Label drop;
+	private VBox drop;
 
 
 	@FXML
@@ -26,6 +27,7 @@ public class Welcome {
 		drop.setOnDragOver(this::onDragOver);
 		drop.setOnDragDropped(this::onDragDropped);
 		drop.setOnDragExited(this::onDragExited);
+		drop.setOnMouseClicked(this::open);
 	}
 
 	private void onDragEntered(final DragEvent event) {
@@ -52,6 +54,17 @@ public class Welcome {
 		drop.getStyleClass().remove(DRAG_OVER);
 	}
 
+	private void open(MouseEvent event) {
+		FileChooser chooser = new FileChooser();
+		chooser.setTitle("Select VCF file");
+		chooser.setInitialDirectory(new File(System.getProperty("user.home")));
+		chooser.getExtensionFilters().addAll(VCF);
+		chooser.setSelectedExtensionFilter(VCF);
+		final File file = chooser.showOpenDialog(Main.getWindow());
+		if (file != null) open(file);
+
+	}
+
 	private File dragFile(final DragEvent event) {
 		final List<File> files = event.getDragboard().getFiles();
 		return files == null || files.isEmpty() ? null : files.get(0);
@@ -65,17 +78,5 @@ public class Welcome {
 
 	private void open(final File file) {
 		MainView.setView(View.TABLE);
-	}
-
-	@FXML
-	private void open() {
-		FileChooser chooser = new FileChooser();
-		chooser.setTitle("Select VCF file");
-		chooser.setInitialDirectory(new File(System.getProperty("user.home")));
-		chooser.getExtensionFilters().addAll(VCF);
-		chooser.setSelectedExtensionFilter(VCF);
-		final File file = chooser.showOpenDialog(Main.getWindow());
-		if (file != null) open(file);
-
 	}
 }
