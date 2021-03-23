@@ -86,15 +86,6 @@
                     <modulePath>target/jmods</modulePath>
                     <name>example</name>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>jpackage</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jpackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

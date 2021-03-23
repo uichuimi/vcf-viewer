@@ -1,3 +1,10 @@
-* {
+root {
     -fx-background-color: cornsilk;
+}
+
+.drag-over {
+	-fx-border-width: 2px;
+	-fx-border-radius: 5px;
+	-fx-border-color: darkgrey;
+	-fx-border-style: dashed;
 }

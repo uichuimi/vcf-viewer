@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
 			xmlns:fx="http://javafx.com/fxml"
 			fx:controller="org.uichuimi.variant.viewer.components.Welcome">
-    <center>
-        <fx:include source="variant-table.fxml" fx:id="variantTable"/>
-    </center>
+	<center>
+		<VBox spacing="15" alignment="CENTER">
+			<Label fx:id="drop" text="Welcome, drag n drop a VCF file her, or">
+				<padding>
+					<Insets top="15" right="15" left="15" bottom="15"/>
+				</padding>
+			</Label>
+			<Button text="Select a VCF file" onAction="#open"/>
+			<padding>
+				<Insets bottom="15" top="15" left="15" right="15"/>
+			</padding>
+		</VBox>
+	</center>
 
 </BorderPane>
