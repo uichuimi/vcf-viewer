@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Label?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.uichuimi.variant.viewer.components.VariantTable">
+    <center>
+        <TableView>
+            <placeholder>
+                <Label text="No data"/>
+            </placeholder>
+        </TableView>
+    </center>
+
+</BorderPane>
