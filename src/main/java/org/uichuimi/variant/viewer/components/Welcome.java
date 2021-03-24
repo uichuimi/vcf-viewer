@@ -77,6 +77,6 @@ public class Welcome {
 	}
 
 	private void open(final File file) {
-		MainView.setView(View.TABLE, (view, controller) -> ((VariantTable) controller).setFile(file));
+		MainView.setView(View.TABLE, (view, controller) -> ((VariantsTable) controller).setFile(file));
 	}
 }

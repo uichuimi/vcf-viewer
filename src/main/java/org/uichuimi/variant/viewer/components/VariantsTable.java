@@ -12,22 +12,26 @@ import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.BorderPane;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-public class VariantTable {
+public class VariantsTable {
 
 	@FXML
-	private TableView<Map.Entry<String, Object>> infoTable;
+	private BorderPane properties;
 	@FXML
-	private TableColumn<Map.Entry<String, Object>, String> info;
+	private PropertiesTable propertiesController;
+
 	@FXML
-	private TableColumn<Map.Entry<String, Object>, String> value;
+	private BorderPane genotypes;
+	@FXML
+	private GenotypesTable genotypesController;
+
 	@FXML
 	private TableColumn<VariantContext, String> snpId;
 	@FXML
@@ -92,7 +96,7 @@ public class VariantTable {
 			for (final VariantContext context : reader) {
 				variantsTable.getItems().add(context);
 				read += 1;
-				if (read >= 10) break;
+				if (read >= 20) break;
 			}
 
 		}
@@ -115,20 +119,12 @@ public class VariantTable {
 		coordinate.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue()));
 		coordinate.setCellFactory(column -> new CoordinateCell());
 		reference.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getReference().getBaseString()));
+		reference.setCellFactory(column -> new AlleleCell());
 		alternate.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getAlternateAlleles().stream().map(Allele::toString).collect(Collectors.joining(","))));
-		variantsTable.getSelectionModel().selectedItemProperty().addListener((obs, prev, variant) -> select(variant));
+		variantsTable.getSelectionModel().selectedItemProperty().addListener((obs, prev, variant) -> propertiesController.select(variant));
 		variantsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		variantsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		infoTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		info.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getKey()));
-		value.setCellValueFactory(features -> new SimpleObjectProperty<>(String.valueOf(features.getValue().getValue())));
 	}
 
-	private void select(final VariantContext variant) {
-		infoTable.getItems().clear();
-		for (final Map.Entry<String, Object> entry : variant.getCommonInfo().getAttributes().entrySet()) {
-			infoTable.getItems().add(entry);
-		}
-	}
 
 }

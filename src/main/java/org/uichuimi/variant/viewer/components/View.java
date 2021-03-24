@@ -6,7 +6,7 @@ import javafx.scene.Parent;
 import java.io.IOException;
 
 public enum View {
-	TABLE("variant-table.fxml");
+	TABLE("variants-table.fxml");
 
 	private final String path;
 	private Object controller;

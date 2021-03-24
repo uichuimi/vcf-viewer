@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane xmlns="http://javafx.com/javafx"
+			xmlns:fx="http://javafx.com/fxml"
+			fx:controller="org.uichuimi.variant.viewer.components.PropertiesTable"
+>
+	<center>
+		<TableView fx:id="infoTable">
+			<columns>
+				<TableColumn fx:id="info" style="-fx-font-style: italic" text="ID"/>
+				<TableColumn fx:id="value" text="Value"/>
+			</columns>
+		</TableView>
+	</center>
+</BorderPane>

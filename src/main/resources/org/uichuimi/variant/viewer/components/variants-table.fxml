@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.uichuimi.variant.viewer.components.VariantsTable">
+	<center>
+		<SplitPane dividerPositions="0.7">
+			<TableView fx:id="variantsTable" tableMenuButtonVisible="true">
+				<placeholder>
+					<Label fx:id="placeholder" text="No data" />
+				</placeholder>
+				<columns>
+					<TableColumn fx:id="snpId" style="-fx-alignment: center" text="SNP Id" />
+					<TableColumn fx:id="coordinate" text="Coordinate" />
+					<TableColumn fx:id="reference" text="Reference" />
+					<TableColumn fx:id="alternate" text="Alternate" />
+				</columns>
+				<padding>
+					<Insets bottom="15" left="15" right="15" top="15" />
+				</padding>
+			</TableView>
+			<SplitPane orientation="VERTICAL">
+				<VBox alignment="TOP_CENTER">
+					<Label text="Properties"/>
+					<fx:include fx:id="properties" source="properties-table.fxml"/>
+				</VBox>
+				<VBox alignment="TOP_CENTER">
+					<Label text="Genotypes"/>
+					<fx:include fx:id="genotypes" source="genotypes-table.fxml"/>
+				</VBox>
+			</SplitPane>
+		</SplitPane>
+	</center>
+
+</BorderPane>

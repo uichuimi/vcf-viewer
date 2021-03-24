@@ -1,13 +1,25 @@
-.root, .split-pane, .vbox, .hbox, .border-pane, .pane, .flow-pane,
-.grid-pane, .stack-pane, .tile-pane {
-	-fx-background-color: whitesmoke;
+.root, .border-pane, .split-pane {
+	-fx-background-color: papayawhip;
+}
+
+.table-row-cell:selected .table-column {
+	-fx-text-fill: black;
 }
 
 .scroll-bar:vertical, .scroll-bar:horizontal {
+	-fx-background-color: transparent;
 }
 
 .scroll-bar:vertical .thumb, .scroll-bar:horizontal .thumb {
 	-fx-background-color: coral;
+}
+
+.show-hide-columns-button {
+	-fx-background-color: transparent;
+}
+
+.show-hide-column-image {
+	-fx-background-color: Coral;
 }
 
 .scroll-bar:vertical .increment-arrow,
@@ -17,9 +29,6 @@
 	-fx-background-color: coral;
 }
 
-.label, .text {
-	-fx-background-color: transparent;
-}
 .drag-over {
 	-fx-border-width: 3px;
 	-fx-border-radius: 15px;
@@ -27,7 +36,7 @@
 	-fx-border-style: dashed;
 }
 
-.table-view, .table-view * {
+.table-view, .column-header-background, .filler {
 	-fx-background-color: transparent;
 }
 
@@ -41,6 +50,7 @@
 .table-view .table-row-cell {
 	-fx-border-width: 0 0 2 0;
 	-fx-border-color: lightgrey;
+	-fx-background-color: transparent;
 }
 
 .table-view .table-row-cell:empty {
@@ -48,16 +58,22 @@
 }
 
 .table-view .table-row-cell:selected {
-	-fx-background-color: Coral;
+	-fx-background-color: PeachPuff;
 }
+
 
 .table-view .table-column {
 	-fx-alignment: center;
 	/*-fx-padding: 5px;*/
 	-fx-pref-height: 32px;
 	-fx-border-width: 0;
+	-fx-background-color: transparent;
 }
 
 .split-pane-divider {
 	-fx-pref-width: 2;
+}
+
+.hyperlink {
+	-fx-text-fill: coral;
 }
