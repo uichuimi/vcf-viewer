@@ -11,9 +11,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.FlowPane;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 
 public class GenotypesTable {
 
@@ -56,7 +56,7 @@ public class GenotypesTable {
 		sample.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getSampleName()));
 		genotype.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getType().toString()));
 		alleles.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getGenotypeString()));
-		count.setCellValueFactory(features -> new SimpleObjectProperty<>(Arrays.toString(features.getValue().getAD())));
+		count.setCellValueFactory(features -> new SimpleObjectProperty<>(alleleCount(features)));
 		for (final GenotypeType type : GenotypeType.values()) {
 			final ToggleButton button = new ToggleButton(type.toString());
 			button.setMnemonicParsing(false);
@@ -66,5 +66,14 @@ public class GenotypesTable {
 			button.selectedProperty().addListener((obs, prev, selected) -> filter());
 			selectors.getChildren().add(button);
 		}
+	}
+
+	private String alleleCount(final TableColumn.CellDataFeatures<Genotype, String> features) {
+		final StringJoiner joiner = new StringJoiner(", ");
+		final Genotype genotype = features.getValue();
+		for (int i = 0; i < genotype.getAD().length; i++) {
+			joiner.add(variant.getAlleles().get(i).getBaseString() + "=" + genotype.getAD()[i]);
+		}
+		return joiner.toString();
 	}
 }
