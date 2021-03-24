@@ -1,16 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
 			xmlns:fx="http://javafx.com/fxml"
 			fx:controller="org.uichuimi.variant.viewer.components.GenotypesTable"
 >
-<center>
+	<center>
+		<TableView fx:id="table" prefHeight="9999">
+			<columns>
+				<TableColumn fx:id="sample" text="Sample"/>
+				<TableColumn fx:id="alleles" text="Alleles"/>
+				<TableColumn fx:id="genotype" text="Genotype"/>
+				<TableColumn fx:id="count" text="Allele count"/>
+			</columns>
+		</TableView>
+	</center>
 
-</center>
+	<bottom>
+		<FlowPane alignment="CENTER" fx:id="selectors" vgap="5" hgap="5"/>
+	</bottom>
+	<padding>
+		<Insets bottom="5"/>
+	</padding>
 </BorderPane>

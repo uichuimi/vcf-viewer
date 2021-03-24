@@ -9,7 +9,7 @@
 			fx:controller="org.uichuimi.variant.viewer.components.PropertiesTable"
 >
 	<center>
-		<TableView fx:id="infoTable">
+		<TableView fx:id="infoTable" prefHeight="9999">
 			<columns>
 				<TableColumn fx:id="info" style="-fx-font-style: italic" text="ID"/>
 				<TableColumn fx:id="value" text="Value"/>

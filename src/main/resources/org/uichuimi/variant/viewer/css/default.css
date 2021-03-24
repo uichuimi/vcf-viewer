@@ -44,7 +44,7 @@
 	-fx-border-width: 0 0 2 0;
 	-fx-border-color: darkgrey;
 	-fx-font-weight: bold;
-	-fx-padding: 5;
+	/*-fx-padding: 5;*/
 }
 
 .table-view .table-row-cell {
@@ -76,4 +76,38 @@
 
 .hyperlink {
 	-fx-text-fill: coral;
+}
+
+.chip {
+	-fx-border-radius: 15px;
+	-fx-background-radius: 15px;
+	-fx-border-color: darkgray;
+	-fx-border-width: 1px;
+	-fx-padding: 2px 5px 2px 5px;
+	-fx-background-color: transparent;
+	-fx-graphic-text-gap: 5px;
+}
+
+.chip:hover {
+	-fx-opacity: 75%;
+}
+
+.chip:selected {
+	-fx-background-color: PeachPuff;
+	-fx-content-display: left;
+	-fx-border-color: coral;
+	-fx-text-fill: coral;
+	-fx-font-weight: bold;
+}
+
+.section-title {
+	-fx-font-size: 0.9em;
+	-fx-background-color: coral;
+	-fx-alignment: center;
+	-fx-padding: 5px;
+}
+
+.section-title .label {
+	-fx-text-fill: peachpuff;
+	-fx-font-weight: bold;
 }

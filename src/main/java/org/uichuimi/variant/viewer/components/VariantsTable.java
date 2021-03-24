@@ -121,9 +121,14 @@ public class VariantsTable {
 		reference.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getReference().getBaseString()));
 		reference.setCellFactory(column -> new AlleleCell());
 		alternate.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getAlternateAlleles().stream().map(Allele::toString).collect(Collectors.joining(","))));
-		variantsTable.getSelectionModel().selectedItemProperty().addListener((obs, prev, variant) -> propertiesController.select(variant));
+		variantsTable.getSelectionModel().selectedItemProperty().addListener((obs, prev, variant) -> select(variant));
 		variantsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		variantsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+	}
+
+	private void select(final VariantContext variant) {
+		propertiesController.select(variant);
+		genotypesController.select(variant);
 	}
 
 
