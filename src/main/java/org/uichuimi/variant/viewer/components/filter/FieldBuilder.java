@@ -21,9 +21,25 @@ public class FieldBuilder {
 		};
 		// Options cannot be known from header line, they must be computed by scanning the file
 		final List<String> options = List.of();
-		final Function<VariantContext, Object> extractor = variant -> variant.getCommonInfo().getAttribute(line.getID());
 		final String name = line.getID();
 		final boolean list = line.getCountType() != VCFHeaderLineCount.INTEGER || line.getCount() > 1;
+
+		// VariantContext#getAttribute(String) returns a String, we must intelligently call a parser method
+		final Function<VariantContext, Object> extractor;
+		if (list) {
+			extractor = switch (type) {
+				case FLOAT -> variant -> variant.getAttributeAsDoubleList(name, 0.0);
+				case INTEGER -> variant -> variant.getAttributeAsIntList(name, 0);
+				default -> variant -> variant.getAttributeAsStringList(name, null);
+			};
+		} else {
+			extractor = switch (type) {
+				case FLOAT -> variant -> variant.getAttributeAsDouble(name, 0.0);
+				case INTEGER -> variant -> variant.getAttributeAsInt(name, 0);
+				default -> variant -> variant.getAttributeAsString(name, null);
+			};
+		}
+
 		return new Field(type, options, extractor, name, list);
 	}
 }

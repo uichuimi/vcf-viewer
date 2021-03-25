@@ -22,7 +22,6 @@ public class Field {
 		this.list = list;
 	}
 
-
 	public Collection<Operator> getOperators() {
 		return type.getOperators();
 	}
@@ -45,6 +44,16 @@ public class Field {
 
 	public boolean isList() {
 		return list;
+	}
+
+	@Override
+	public String toString() {
+		return "Field{" +
+			"list=" + list +
+			", options=" + options +
+			", displayName='" + displayName + '\'' +
+			", type=" + type +
+			'}';
 	}
 
 	public enum Type {

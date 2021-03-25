@@ -3,7 +3,7 @@ package org.uichuimi.variant.viewer.components.filter;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.uichuimi.variant.viewer.components.Accessor;
 
-import java.util.List;
+import java.util.Collection;
 
 public class Filter {
 	/*
@@ -25,7 +25,7 @@ public class Filter {
 	 * 	- operator : Operator
 	 * 		- query() : boolean
 	 * 	- accessor : Accessor
-	 * 	- value : Object
+	 * 	- value : Object|[Object]
 	 *
 	 */
 
@@ -57,18 +57,52 @@ public class Filter {
 		return accessor;
 	}
 
-	private boolean filter(VariantContext variant) {
+	public boolean filter(VariantContext variant) {
 		final Object value = field.extract(variant);
 		if (value == null) return false;
-		if (field.isList()) {
-			final List<Object> list = (List<Object>) value;
-			return switch (accessor) {
-				case ALL -> list.stream().allMatch(val -> operator.query(this.value, val));
-				case NONE -> list.stream().noneMatch(val -> operator.query(this.value, val));
-				default -> list.stream().anyMatch(val -> operator.query(this.value, val));
-			};
-		} else {
-			return operator.query(this.value, value);
+		return filter(this.value, value);
+	}
+
+	private boolean filter(Object thisValue, Object queryValue) {
+		if (thisValue instanceof Collection) {
+			return filter((Collection<?>) thisValue, queryValue);
 		}
+		if (queryValue instanceof Collection) {
+			return filter(thisValue, (Collection<?>) queryValue);
+		}
+		return operator.query(queryValue, thisValue);
+	}
+
+	private boolean filter(final Object thisValue, final Collection<?> queryValue) {
+		return switch (accessor) {
+			case ALL -> queryValue.stream().allMatch(val -> filter(thisValue, val));
+			case NONE -> queryValue.stream().noneMatch(val -> filter(thisValue, val));
+			default -> queryValue.stream().anyMatch(val -> filter(thisValue, val));
+		};
+	}
+
+	private boolean filter(Collection<?> thisValue, Object queryValue) {
+		return thisValue.stream().anyMatch(val -> filter(val, queryValue));
+	}
+
+	@Override
+	public String toString() {
+		return "Filter{" +
+			"field=" + field +
+			", accessor=" + accessor +
+			", operator=" + operator +
+			", value=" + value +
+			'}';
+	}
+
+	public String display() {
+		final StringBuilder builder = new StringBuilder();
+		if (accessor != null) builder.append(accessor).append(" ");
+		builder.append(field.getDisplayName());
+		builder.append(" ").append(operator.getDisplay());
+		if (value != null) {
+			builder.append(" ").append(value);
+		}
+		return builder.toString();
 	}
 }

@@ -5,11 +5,10 @@ import htsjdk.variant.vcf.VCFContigHeaderLine;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import htsjdk.variant.vcf.VCFSimpleHeaderLine;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.CheckComboBox;
 import org.uichuimi.variant.VcfIndex;
@@ -24,8 +23,10 @@ import java.util.stream.Collectors;
 public class Filters {
 
 	private final TextField textEntry = new TextField();
-	private final TextField numberEntry = new TextField();
+	private final TextField integerEntry = new TextField();
+	private final TextField floatEntry = new TextField();
 	private final CheckComboBox<String> multipleEntry = new CheckComboBox<>();
+
 	@FXML
 	private VBox valueHolder;
 	@FXML
@@ -35,13 +36,18 @@ public class Filters {
 	@FXML
 	private ComboBox<Operator> operator;
 	@FXML
-	private TableView<Filter> filters;
-	private VCFHeader header;
-	private boolean queryable;
+	private ListView<Filter> filters;
 
-	public void setMetadata(final VCFHeader header, final boolean queryable) {
+	private VCFHeader header;
+
+	/**
+	 * Creates filters based on vcf header. Fields are created from {@link htsjdk.variant.vcf.VCFInfoHeaderLine}.
+	 * Options cannot be read.
+	 *
+	 * @param header vcf header
+	 */
+	public void setMetadata(final VCFHeader header) {
 		this.header = header;
-		this.queryable = queryable;
 		initFilters();
 	}
 
@@ -79,10 +85,51 @@ public class Filters {
 		return FieldBuilder.create(line);
 	}
 
+	public boolean filter(final VariantContext context) {
+		return filters.getItems().stream().allMatch(filter -> filter.filter(context));
+	}
+
+	/**
+	 * Creates filters by using a custom index, which is optimized to improve performance. It also contains all the
+	 * options for fields.
+	 *
+	 * @param index source index
+	 */
 	public void setMetadata(final VcfIndex index) {
 		for (final Filter filter : filters.getItems()) {
 
 		}
+	}
+
+	public ObservableList<Filter> filter() {
+		return filters.getItems();
+	}
+
+	@FXML
+	private void add() {
+		final Object value;
+		if (field.getValue().getType() == Field.Type.INTEGER) {
+			try {
+				value = Integer.parseInt(integerEntry.getText());
+			} catch (NumberFormatException e) {
+				return;
+			}
+		} else if (field.getValue().getType() == Field.Type.FLOAT) {
+			try {
+				value = Double.parseDouble(floatEntry.getText());
+			} catch (NumberFormatException e) {
+				return;
+			}
+		} else if (field.getValue().getType() == Field.Type.TEXT) {
+			value = textEntry.getText();
+		} else if (field.getValue().getType() == Field.Type.MULTIPLE) {
+			value = multipleEntry.getCheckModel().getCheckedItems();
+		} else if (field.getValue().getType() == Field.Type.FLAG) {
+			value = false;
+		} else value = null;
+		final Filter filter = new Filter(field.getValue(), accessor.getValue(), operator.getValue(), value);
+		System.out.println(filter);
+		filters.getItems().add(filter);
 	}
 
 	@FXML
@@ -96,6 +143,25 @@ public class Filters {
 		accessor.getItems().setAll(Accessor.values());
 
 		field.valueProperty().addListener((obs, prev, value) -> updateOptions());
+
+		integerEntry.textProperty().addListener((observableValue, s, val) -> {
+			try {
+				Integer.parseInt(val);
+				integerEntry.getStyleClass().remove("error");
+			} catch (NumberFormatException ex) {
+				integerEntry.getStyleClass().add("error");
+			}
+		});
+		floatEntry.textProperty().addListener((observableValue, s, val) -> {
+			try {
+				Double.parseDouble(val);
+				floatEntry.getStyleClass().remove("error");
+			} catch (NumberFormatException ex) {
+				floatEntry.getStyleClass().add("error");
+			}
+		});
+
+		filters.setCellFactory(val -> new FilterCell());
 	}
 
 	private void updateOptions() {
@@ -106,9 +172,13 @@ public class Filters {
 		operator.getItems().setAll(field.getOperators());
 		// Set value box
 		switch (field.getType()) {
-			case FLOAT, INTEGER -> {
-				valueHolder.getChildren().setAll(numberEntry);
-				numberEntry.setText(null);
+			case FLOAT -> {
+				valueHolder.getChildren().setAll(floatEntry);
+				floatEntry.setText("");
+			}
+			case INTEGER -> {
+				valueHolder.getChildren().setAll(integerEntry);
+				integerEntry.setText("");
 			}
 			case MULTIPLE -> {
 				valueHolder.getChildren().setAll(multipleEntry);
@@ -137,6 +207,25 @@ public class Filters {
 		protected void updateItem(final Operator item, final boolean empty) {
 			super.updateItem(item, empty);
 			setText(item == null || empty ? null : item.getDisplay());
+		}
+	}
+
+	private class FilterCell extends ListCell<Filter> {
+		private final Label delete = new Label("X");
+
+		@Override
+		protected void updateItem(final Filter filter, final boolean empty) {
+			super.updateItem(filter, empty);
+			setText(null);
+			if (empty || filter == null) {
+				setGraphic(null);
+			} else {
+				final BorderPane content = new BorderPane();
+				content.setLeft(new SelectableLabel(filter.display()));
+				content.setRight(delete);
+				delete.setOnMouseClicked(event -> Filters.this.filters.getItems().remove(filter));
+				setGraphic(content);
+			}
 		}
 	}
 }

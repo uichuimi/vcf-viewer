@@ -7,6 +7,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.*;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -15,6 +16,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import org.uichuimi.variant.VcfIndex;
+import org.uichuimi.variant.viewer.components.filter.Filter;
 import org.uichuimi.variant.viewer.utils.Chromosome;
 import org.uichuimi.variant.viewer.utils.GenomeProgress;
 
@@ -91,7 +93,7 @@ public class VariantsTable {
 			header = reader.getHeader();
 			queryable = reader.isQueryable();
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
-			filtersController.setMetadata(header, queryable);
+			filtersController.setMetadata(header);
 		} catch (Exception e) {
 			MainView.error(e);
 		}
@@ -104,12 +106,18 @@ public class VariantsTable {
 	}
 
 	private void fill() {
+		variantsTable.getItems().clear();
 		try (VCFFileReader reader = new VCFFileReader(file, false)) {
 			int read = 0;
+			int filtered = 0;
 			for (final VariantContext context : reader) {
-				variantsTable.getItems().add(context);
+				if (filtersController.filter(context)) {
+					variantsTable.getItems().add(context);
+					filtered++;
+					if (filtered >= 20) break;
+				}
 				read += 1;
-				if (read >= 20) break;
+//				if (read >= 100) break;
 			}
 		}
 	}
@@ -136,6 +144,8 @@ public class VariantsTable {
 		variantsTable.getSelectionModel().selectedItemProperty().addListener((obs, prev, variant) -> select(variant));
 		variantsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		variantsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		filtersController.filter().addListener((ListChangeListener<Filter>) change -> fill());
+
 	}
 
 	private void select(final VariantContext variant) {

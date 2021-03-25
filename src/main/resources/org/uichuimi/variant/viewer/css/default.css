@@ -111,3 +111,12 @@
 	-fx-text-fill: papayawhip;
 	-fx-font-weight: bold;
 }
+
+.error {
+	-fx-border-color: tomato;
+}
+
+
+.list-cell:empty {
+	-fx-background-color: transparent;
+}

@@ -19,6 +19,7 @@ public class PropertiesTable {
 
 	public void select(final VariantContext variant) {
 		infoTable.getItems().clear();
+		if (variant == null) return;
 		for (final Map.Entry<String, Object> entry : variant.getCommonInfo().getAttributes().entrySet()) {
 			infoTable.getItems().add(entry);
 		}
@@ -29,6 +30,8 @@ public class PropertiesTable {
 		infoTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		info.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getKey()));
 		value.setCellValueFactory(features -> new SimpleObjectProperty<>(String.valueOf(features.getValue().getValue())));
+		value.setCellFactory(column -> new NaturalCell<>());
+		infoTable.setEditable(true);
 	}
 
 }
