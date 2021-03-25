@@ -23,15 +23,20 @@ import java.util.stream.Collectors;
 public class VariantsTable {
 
 	@FXML
+	private BorderPane filters;
+	@FXML
+	private Filters filtersController;
+	@FXML
 	private BorderPane properties;
 	@FXML
 	private PropertiesTable propertiesController;
-
 	@FXML
 	private BorderPane genotypes;
 	@FXML
 	private GenotypesTable genotypesController;
 
+	@FXML
+	private TableView<VariantContext> variantsTable;
 	@FXML
 	private TableColumn<VariantContext, String> snpId;
 	@FXML
@@ -42,8 +47,6 @@ public class VariantsTable {
 	private TableColumn<VariantContext, String> alternate;
 	@FXML
 	private Label placeholder;
-	@FXML
-	private TableView<VariantContext> variantsTable;
 
 	private VCFHeader header;
 	private boolean queryable;
@@ -78,13 +81,13 @@ public class VariantsTable {
 	}
 
 	private void index() {
-
 		try (VCFFileReader reader = new VCFFileReader(file, false)) {
 			header = reader.getHeader();
 			queryable = reader.isQueryable();
 			System.out.println(header);
 			System.out.println(queryable);
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
+			filtersController.setMetadata(header, queryable);
 		} catch (Exception e) {
 			MainView.error(e);
 		}
@@ -98,7 +101,6 @@ public class VariantsTable {
 				read += 1;
 				if (read >= 20) break;
 			}
-
 		}
 	}
 
@@ -130,6 +132,5 @@ public class VariantsTable {
 		propertiesController.select(variant);
 		genotypesController.select(variant);
 	}
-
 
 }

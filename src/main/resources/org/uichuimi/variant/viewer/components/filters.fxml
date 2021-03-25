@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.TextField?>
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+			xmlns:fx="http://javafx.com/fxml/1"
+			fx:controller="org.uichuimi.variant.viewer.components.Filters"
+>
+	<center>
+		<VBox>
+			<FlowPane hgap="5" vgap="5">
+				<ComboBox fx:id="field" promptText="Field"/>
+				<ComboBox fx:id="accessor" promptText="Selector"/>
+				<ComboBox fx:id="operator" promptText="Operator"/>
+				<VBox fx:id="valueHolder"/>
+			</FlowPane>
+			<TableView fx:id="filters">
+
+			</TableView>
+		</VBox>
+
+	</center>
+</BorderPane>

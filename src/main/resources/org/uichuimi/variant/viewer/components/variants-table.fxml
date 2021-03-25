@@ -5,7 +5,13 @@
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
 			fx:controller="org.uichuimi.variant.viewer.components.VariantsTable">
 	<center>
-		<SplitPane dividerPositions="0.7">
+		<SplitPane dividerPositions="0.15,0.85">
+			<VBox>
+				<VBox styleClass="section-title">
+					<Label text="FILTERS"/>
+				</VBox>
+				<fx:include fx:id="filters" source="filters.fxml"/>
+			</VBox>
 			<VBox>
 				<VBox styleClass="section-title">
 					<Label text="VARIANTS"/>
