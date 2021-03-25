@@ -116,7 +116,6 @@
 	-fx-border-color: tomato;
 }
 
-
 .list-cell:empty {
 	-fx-background-color: transparent;
 }

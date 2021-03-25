@@ -3,14 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.CheckComboBox?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.uichuimi.variant.viewer.components.Filters">
-	<center>
-		<VBox>
-			<FlowPane hgap="5" vgap="5" />
-			<ListView fx:id="filters"/>
-		</VBox>
-
-	</center>
 	<top>
 		<VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
 			<padding>
@@ -31,12 +25,23 @@
 				<Label text="Selector" GridPane.rowIndex="1"/>
 				<Label text="Operator" GridPane.rowIndex="2"/>
 				<Label text="Value" GridPane.rowIndex="3"/>
-				<VBox fx:id="valueHolder" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
 				<ComboBox fx:id="field" promptText="Field" GridPane.columnIndex="1"/>
 				<ComboBox fx:id="accessor" promptText="Selector" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 				<ComboBox fx:id="operator" promptText="Operator" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+				<VBox fx:id="valueHolder" GridPane.columnIndex="1" GridPane.rowIndex="3">
+					<TextField fx:id="textEntry" />
+					<TextField fx:id="floatEntry"/>
+					<TextField fx:id="integerEntry"/>
+					<CheckComboBox fx:id="multipleEntry"/>
+				</VBox>
 			</GridPane>
 			<Button minWidth="150.0" mnemonicParsing="false" text="Add" onAction="#add"/>
 		</VBox>
 	</top>
+	<center>
+		<VBox>
+			<ListView fx:id="filters"/>
+		</VBox>
+
+	</center>
 </BorderPane>

@@ -22,10 +22,14 @@ import java.util.stream.Collectors;
 
 public class Filters {
 
-	private final TextField textEntry = new TextField();
-	private final TextField integerEntry = new TextField();
-	private final TextField floatEntry = new TextField();
-	private final CheckComboBox<String> multipleEntry = new CheckComboBox<>();
+	@FXML
+	private  TextField textEntry;
+	@FXML
+	private  TextField integerEntry;
+	@FXML
+	private  TextField floatEntry;
+	@FXML
+	private  CheckComboBox<String> multipleEntry;
 
 	@FXML
 	private VBox valueHolder;
@@ -141,6 +145,7 @@ public class Filters {
 		operator.setButtonCell(new OperatorListCell());
 
 		accessor.getItems().setAll(Accessor.values());
+		accessor.setValue(Accessor.ANY);
 
 		field.valueProperty().addListener((obs, prev, value) -> updateOptions());
 
@@ -162,19 +167,26 @@ public class Filters {
 		});
 
 		filters.setCellFactory(val -> new FilterCell());
+
+		// Kick out entry controls
+		valueHolder.getChildren().clear();
 	}
 
 	private void updateOptions() {
 		final Field field = this.field.getValue();
-		// Set accessor
+		// Enable/disable accessor
 		accessor.setDisable(!field.isList());
-		// Set operators
+
+		// Set operators and select first
 		operator.getItems().setAll(field.getOperators());
+		operator.setValue(field.getOperators().iterator().next());
+
 		// Set value box
 		switch (field.getType()) {
 			case FLOAT -> {
 				valueHolder.getChildren().setAll(floatEntry);
 				floatEntry.setText("");
+
 			}
 			case INTEGER -> {
 				valueHolder.getChildren().setAll(integerEntry);
