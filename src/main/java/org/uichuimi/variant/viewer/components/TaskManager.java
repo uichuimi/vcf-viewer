@@ -1,31 +1,40 @@
 package org.uichuimi.variant.viewer.components;
 
+import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 
-import java.util.PriorityQueue;
+import java.util.ArrayDeque;
 import java.util.Queue;
 
 public class TaskManager {
 
 
-	private final Queue<Task<?>> tasks = new PriorityQueue<>();
+	private final Queue<Task<?>> tasks = new ArrayDeque<>();
 	private final Property<Task<?>> task = new SimpleObjectProperty<>();
 
+	public TaskManager() {
+		Runtime.getRuntime().addShutdownHook(new Thread(this::destroyTasks));
+	}
+
+	public void destroyTasks() {
+		tasks.clear();
+		Platform.runLater(() -> {
+			if (task.getValue() != null && task.getValue().isRunning())
+				task.getValue().cancel();
+		});
+	}
 
 	public void addToQueue(Task<?> task) {
 		tasks.add(task);
 		next();
 	}
 
-	public void destroyTasks() {
-		tasks.clear();
-		if (task.getValue() != null && task.getValue().isRunning())
-			task.getValue().cancel();
+	public Property<Task<?>> taskProperty() {
+		return task;
 	}
-
 
 	private void next() {
 		if (task.getValue() == null && !tasks.isEmpty())
@@ -41,10 +50,5 @@ public class TaskManager {
 		});
 		this.task.setValue(task);
 		new Thread(task).start();
-	}
-
-
-	public Property<Task<?>> taskProperty() {
-		return task;
 	}
 }

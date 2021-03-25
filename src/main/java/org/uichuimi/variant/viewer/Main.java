@@ -25,6 +25,8 @@ public class Main extends Application {
 		stage.setTitle("VCF viewer");
 		stage.setScene(scene);
 		window = stage.getOwner();
+		// Send exit signal to application, to enforce background tasks to stop
+		stage.setOnCloseRequest(a -> Runtime.getRuntime().exit(0));
 		stage.show();
 
 	}

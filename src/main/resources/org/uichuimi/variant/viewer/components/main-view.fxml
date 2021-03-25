@@ -1,24 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.Label?>
-<BorderPane xmlns="http://javafx.com/javafx"
-			xmlns:fx="http://javafx.com/fxml"
-			fx:controller="org.uichuimi.variant.viewer.components.MainView"
-			fx:id="center"
-			prefWidth="800"
-			prefHeight="400"
->
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<BorderPane fx:id="center" prefHeight="400" prefWidth="800" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.uichuimi.variant.viewer.components.MainView">
 	<center>
-		<fx:include source="welcome.fxml"/>
+		<fx:include source="welcome.fxml" />
 	</center>
 	<bottom>
 		<BorderPane>
 			<right>
-				<ProgressBar fx:id="progress"/>
-				<Label fx:id="message"/>
+				<FlowPane alignment="CENTER_RIGHT" columnHalignment="RIGHT" hgap="5" BorderPane.alignment="CENTER_RIGHT">
+					<ProgressBar fx:id="progress" visible="false" />
+					<Label fx:id="message" visible="false"/>
+				</FlowPane>
 			</right>
 		</BorderPane>
 	</bottom>

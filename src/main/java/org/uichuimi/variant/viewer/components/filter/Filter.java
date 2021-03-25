@@ -6,6 +6,28 @@ import org.uichuimi.variant.viewer.components.Accessor;
 import java.util.List;
 
 public class Filter {
+	/*
+	 * field		| accessor	| operator		| value
+	 * ------------ | --------- | ------------- | ----------
+	 * chrom		| null		| null			| chr1,chr2
+	 * pos			| null		| <,<=,=,>=,> 	| 1000
+	 * filter		| any		| null			| options
+	 *
+	 *
+	 * Filter
+	 * 	- field : Field
+	 * 		- extractor : variant -> value
+	 * 		- list : boolean
+	 * 		- options : [String]
+	 * 		- name : String
+	 * 		- type : Type
+	 * 			- operators : [Operator]
+	 * 	- operator : Operator
+	 * 		- query() : boolean
+	 * 	- accessor : Accessor
+	 * 	- value : Object
+	 *
+	 */
 
 	private final Field field;
 	private final Accessor accessor;

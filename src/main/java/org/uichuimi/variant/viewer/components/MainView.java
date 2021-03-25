@@ -20,7 +20,6 @@ public class MainView {
 	private ProgressBar progress;
 	@FXML
 	private Label message;
-
 	@FXML
 	private BorderPane center;
 
@@ -95,9 +94,16 @@ public class MainView {
 		manager.taskProperty().addListener((obs, prev, task) -> {
 			message.textProperty().unbind();
 			progress.progressProperty().unbind();
-			if (task != null && task.isRunning()) {
+			if (task == null) {
+				message.setText(null);
+				message.setVisible(false);
+				progress.setProgress(0.0);
+				progress.setVisible(false);
+			} else {
 				message.textProperty().bind(task.messageProperty());
+				message.setVisible(true);
 				progress.progressProperty().bind(task.progressProperty());
+				progress.setVisible(true);
 			}
 		});
 	}

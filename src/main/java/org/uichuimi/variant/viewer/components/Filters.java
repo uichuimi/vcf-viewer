@@ -12,6 +12,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.CheckComboBox;
+import org.uichuimi.variant.VcfIndex;
 import org.uichuimi.variant.viewer.components.filter.Field;
 import org.uichuimi.variant.viewer.components.filter.FieldBuilder;
 import org.uichuimi.variant.viewer.components.filter.Filter;
@@ -76,6 +77,12 @@ public class Filters {
 
 	private Field toField(final VCFInfoHeaderLine line) {
 		return FieldBuilder.create(line);
+	}
+
+	public void setMetadata(final VcfIndex index) {
+		for (final Filter filter : filters.getItems()) {
+
+		}
 	}
 
 	@FXML
