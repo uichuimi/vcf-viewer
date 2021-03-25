@@ -1,11 +1,9 @@
 package org.uichuimi.variant.viewer.components;
 
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -18,9 +16,15 @@ import java.util.Optional;
 public class MainView {
 
 	private static BorderPane staticBorderPane;
+	@FXML
+	private ProgressBar progress;
+	@FXML
+	private Label message;
 
 	@FXML
 	private BorderPane center;
+
+	private static final TaskManager manager = new TaskManager();
 
 	public static void setView(View view) {
 		setView(view, null);
@@ -31,11 +35,6 @@ public class MainView {
 		final Object controller = view.getController();
 		staticBorderPane.setCenter(root);
 		if (onLoad != null) onLoad.transition(root, controller);
-	}
-
-	@FXML
-	private void initialize() {
-		staticBorderPane = center;
 	}
 
 	public static void error(String message) {
@@ -85,5 +84,21 @@ public class MainView {
 
 		Optional<ButtonType> result = alert.showAndWait();
 		return result.isPresent() && result.get() == ButtonType.OK;
+	}
+
+	public static void launch(Task<?> task) {
+		manager.addToQueue(task);
+	}
+	@FXML
+	private void initialize() {
+		staticBorderPane = center;
+		manager.taskProperty().addListener((obs, prev, task) -> {
+			message.textProperty().unbind();
+			progress.progressProperty().unbind();
+			if (task != null && task.isRunning()) {
+				message.textProperty().bind(task.messageProperty());
+				progress.progressProperty().bind(task.progressProperty());
+			}
+		});
 	}
 }

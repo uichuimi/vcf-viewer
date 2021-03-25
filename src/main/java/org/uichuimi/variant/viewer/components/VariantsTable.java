@@ -84,8 +84,6 @@ public class VariantsTable {
 		try (VCFFileReader reader = new VCFFileReader(file, false)) {
 			header = reader.getHeader();
 			queryable = reader.isQueryable();
-			System.out.println(header);
-			System.out.println(queryable);
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
 			filtersController.setMetadata(header, queryable);
 		} catch (Exception e) {

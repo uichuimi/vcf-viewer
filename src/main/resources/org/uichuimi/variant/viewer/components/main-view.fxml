@@ -2,6 +2,8 @@
 
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Label?>
 <BorderPane xmlns="http://javafx.com/javafx"
 			xmlns:fx="http://javafx.com/fxml"
 			fx:controller="org.uichuimi.variant.viewer.components.MainView"
@@ -12,4 +14,12 @@
 	<center>
 		<fx:include source="welcome.fxml"/>
 	</center>
+	<bottom>
+		<BorderPane>
+			<right>
+				<ProgressBar fx:id="progress"/>
+				<Label fx:id="message"/>
+			</right>
+		</BorderPane>
+	</bottom>
 </BorderPane>
