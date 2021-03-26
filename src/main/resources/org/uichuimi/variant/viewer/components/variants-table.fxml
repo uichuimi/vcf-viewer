@@ -5,7 +5,7 @@
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
 			fx:controller="org.uichuimi.variant.viewer.components.VariantsTable">
 	<center>
-		<SplitPane dividerPositions="0.15,0.85">
+		<SplitPane dividerPositions="0.15,0.85" style="-fx-border-width: 0 0 0 2; -fx-border-color: -fx-light-color">
 			<SplitPane orientation="VERTICAL">
 				<VBox>
 					<VBox styleClass="section-title">

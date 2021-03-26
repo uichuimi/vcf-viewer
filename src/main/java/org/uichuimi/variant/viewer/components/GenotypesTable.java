@@ -56,7 +56,7 @@ public class GenotypesTable {
 		sample.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getSampleName()));
 		genotype.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getType().toString()));
 		alleles.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getGenotypeString()));
-		count.setCellValueFactory(features -> new SimpleObjectProperty<>(alleleCount(features)));
+		count.setCellValueFactory(features -> new SimpleObjectProperty<>(alleleCount(features.getValue())));
 		for (final GenotypeType type : GenotypeType.values()) {
 			final ToggleButton button = new ToggleButton(type.toString());
 			button.setMnemonicParsing(false);
@@ -68,9 +68,9 @@ public class GenotypesTable {
 		}
 	}
 
-	private String alleleCount(final TableColumn.CellDataFeatures<Genotype, String> features) {
+	private String alleleCount(final Genotype genotype) {
+		if (genotype == null) return null;
 		final StringJoiner joiner = new StringJoiner(", ");
-		final Genotype genotype = features.getValue();
 		for (int i = 0; i < genotype.getAD().length; i++) {
 			joiner.add(variant.getAlleles().get(i).getBaseString() + "=" + genotype.getAD()[i]);
 		}

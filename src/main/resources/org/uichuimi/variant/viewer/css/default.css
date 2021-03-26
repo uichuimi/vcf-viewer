@@ -45,7 +45,7 @@
 
 .table-view {
 	-fx-border-width: 1;
-	-fx-border-color: lightgrey;
+	-fx-border-color: -fx-main-color;
 }
 
 .table-view, .column-header-background, .filler {
@@ -54,14 +54,14 @@
 
 .table-view .column-header-background {
 	-fx-border-width: 0 0 2 0;
-	-fx-border-color: darkgrey;
+	-fx-border-color: -fx-main-color;
 	-fx-font-weight: bold;
 	/*-fx-padding: 5;*/
 }
 
 .table-view .table-row-cell {
 	-fx-border-width: 0 0 2 0;
-	-fx-border-color: lightgrey;
+	-fx-border-color: -fx-light-color;
 	-fx-background-color: transparent;
 }
 
@@ -83,7 +83,8 @@
 }
 
 .split-pane-divider {
-	-fx-pref-width: 2;
+	-fx-pref-width: 1;
+	-fx-background-color: -fx-lighter-color;
 }
 
 .hyperlink {

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
-<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
 			xmlns:fx="http://javafx.com/fxml"
 			fx:controller="org.uichuimi.variant.viewer.components.GenotypesTable"
@@ -23,6 +23,6 @@
 		<FlowPane alignment="CENTER" fx:id="selectors" vgap="5" hgap="5"/>
 	</bottom>
 	<padding>
-		<Insets bottom="5"/>
+		<Insets top="5" bottom="5"/>
 	</padding>
 </BorderPane>

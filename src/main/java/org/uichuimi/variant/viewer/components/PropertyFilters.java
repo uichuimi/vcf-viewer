@@ -116,6 +116,7 @@ public class PropertyFilters {
 	@FXML
 	private void add() {
 		if (operator == null) return;
+		if (field.getValue() == null) return;
 		if (field.getValue().isList() && accessor == null) return;
 		final Object value;
 		if (field.getValue().getType() == Field.Type.INTEGER) {
