@@ -13,10 +13,10 @@ import org.uichuimi.variant.VcfIndex;
 import org.uichuimi.variant.viewer.components.filter.Field;
 import org.uichuimi.variant.viewer.components.filter.FieldBuilder;
 import org.uichuimi.variant.viewer.utils.Chromosome;
+import org.uichuimi.variant.viewer.utils.Constants;
 import org.uichuimi.variant.viewer.utils.GenomeProgress;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 class Indexer extends Task<VcfIndex> {
@@ -29,7 +29,26 @@ class Indexer extends Task<VcfIndex> {
 	}
 
 	@Override
-	protected VcfIndex call() throws Exception {
+	protected VcfIndex call() {
+		final File indexFile = new File(file.getAbsolutePath() + ".vcf-index");
+		if (indexFile.exists()) {
+			try (FileInputStream in = new FileInputStream(indexFile)) {
+				return (VcfIndex) new ObjectInputStream(in).readObject();
+			} catch (IOException | ClassNotFoundException e) {
+				e.printStackTrace();
+				MainView.error(e);
+			}
+		}
+		final VcfIndex index = createIndex();
+		try (FileOutputStream out = new FileOutputStream(indexFile)) {
+			new ObjectOutputStream(out).writeObject(index);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return index;
+	}
+
+	private VcfIndex createIndex() {
 		final Map<String, Set<String>> options = new TreeMap<>();
 		final Set<String> contigs = new LinkedHashSet<>();
 		final Set<String> filters = new LinkedHashSet<>();
@@ -104,23 +123,23 @@ class Indexer extends Task<VcfIndex> {
 	}
 
 	private Field chromField(List<String> contigs) {
-		return new Field(Field.Type.TEXT, contigs, VariantContext::getContig, "Chromosome", false);
+		return new Field(Field.Type.TEXT, contigs, Constants.CHROM, false, Field.Category.STANDARD);
 	}
 
 	private Field posField() {
-		return new Field(Field.Type.INTEGER, null, VariantContext::getStart, "Position", false);
+		return new Field(Field.Type.INTEGER, List.of(), Constants.POS, false, Field.Category.STANDARD);
 	}
 
 	private Field qualField() {
-		return new Field(Field.Type.FLOAT, null, VariantContext::getPhredScaledQual, "Quality", false);
+		return new Field(Field.Type.FLOAT, List.of(), Constants.QUAL, false, Field.Category.STANDARD);
 	}
 
 	private Field idField() {
-		return new Field(Field.Type.TEXT, null, VariantContext::getID, "Identifier", false);
+		return new Field(Field.Type.TEXT, List.of(), Constants.ID, false, Field.Category.STANDARD);
 	}
 
 	private Field filterField(final List<String> filters) {
-		return new Field(Field.Type.TEXT, filters, VariantContext::getFilters, "Filter", true);
+		return new Field(Field.Type.TEXT, filters, Constants.FILTER, true, Field.Category.STANDARD);
 	}
 
 	private Field toField(final VCFInfoHeaderLine line, final Set<String> options) {

@@ -98,7 +98,7 @@ public class Filter {
 	public String display() {
 		final StringBuilder builder = new StringBuilder();
 		if (accessor != null) builder.append(accessor).append(" ");
-		builder.append(field.getDisplayName());
+		builder.append(field.getName());
 		builder.append(" ").append(operator.getDisplay());
 		if (value != null) {
 			builder.append(" ").append(value);

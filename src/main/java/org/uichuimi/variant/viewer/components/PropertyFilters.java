@@ -14,30 +14,28 @@ import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
-import org.controlsfx.glyphfont.GlyphFont;
-import org.controlsfx.glyphfont.GlyphFontRegistry;
 import org.uichuimi.variant.VcfIndex;
 import org.uichuimi.variant.viewer.components.filter.Field;
 import org.uichuimi.variant.viewer.components.filter.FieldBuilder;
 import org.uichuimi.variant.viewer.components.filter.Filter;
 import org.uichuimi.variant.viewer.components.filter.Operator;
+import org.uichuimi.variant.viewer.utils.Constants;
 
 import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-public class Filters {
+public class PropertyFilters {
 
-	private final static GlyphFont fontAwesome = GlyphFontRegistry.font("FontAwesome");
-
+	public static final String FONT_AWESOME = "FontAwesome";
 	@FXML
-	private  TextField textEntry;
+	private TextField textEntry;
 	@FXML
-	private  TextField integerEntry;
+	private TextField integerEntry;
 	@FXML
-	private  TextField floatEntry;
+	private TextField floatEntry;
 	@FXML
-	private  CheckComboBox<String> multipleEntry;
+	private CheckComboBox<String> multipleEntry;
 
 	@FXML
 	private VBox valueHolder;
@@ -60,10 +58,10 @@ public class Filters {
 	 */
 	public void setMetadata(final VCFHeader header) {
 		this.header = header;
-		initFilters();
+		createBasicFilters();
 	}
 
-	private void initFilters() {
+	private void createBasicFilters() {
 		field.getItems().clear();
 		field.getItems().addAll(chromField(), posField(), filterField(), qualField(), idField());
 		for (final VCFInfoHeaderLine line : header.getInfoHeaderLines()) {
@@ -73,24 +71,24 @@ public class Filters {
 
 	private Field chromField() {
 		final List<String> contigs = header.getContigLines().stream().map(VCFContigHeaderLine::getID).collect(Collectors.toList());
-		return new Field(Field.Type.TEXT, contigs, VariantContext::getContig, "Chromosome", false);
+		return new Field(Field.Type.TEXT, contigs, Constants.CHROM, false, Field.Category.STANDARD);
 	}
 
 	private Field posField() {
-		return new Field(Field.Type.INTEGER, null, VariantContext::getStart, "Position", false);
+		return new Field(Field.Type.INTEGER, List.of(), Constants.POS, false, Field.Category.STANDARD);
 	}
 
 	private Field filterField() {
 		final List<String> fltrs = header.getFilterLines().stream().map(VCFSimpleHeaderLine::getID).collect(Collectors.toList());
-		return new Field(Field.Type.TEXT, fltrs, VariantContext::getFilters, "Filter", true);
+		return new Field(Field.Type.TEXT, fltrs, Constants.FILTER, true, Field.Category.STANDARD);
 	}
 
 	private Field qualField() {
-		return new Field(Field.Type.FLOAT, null, VariantContext::getPhredScaledQual, "Quality", false);
+		return new Field(Field.Type.FLOAT, List.of(), Constants.QUAL, false, Field.Category.STANDARD);
 	}
 
 	private Field idField() {
-		return new Field(Field.Type.TEXT, null, VariantContext::getID, "Identifier", false);
+		return new Field(Field.Type.TEXT, List.of(), Constants.ID, false, Field.Category.STANDARD);
 	}
 
 	private Field toField(final VCFInfoHeaderLine line) {
@@ -213,6 +211,7 @@ public class Filters {
 					valueHolder.getChildren().setAll(multipleEntry);
 					multipleEntry.getItems().setAll(field.getOptions());
 					multipleEntry.getCheckModel().clearChecks();
+					multipleEntry.setShowCheckedCount(true);
 					operator.getItems().setAll(Operator.TEXT_EQUAL);
 					operator.setValue(Operator.TEXT_EQUAL);
 					operator.setDisable(true);
@@ -227,7 +226,7 @@ public class Filters {
 		@Override
 		protected void updateItem(final Field item, final boolean empty) {
 			super.updateItem(item, empty);
-			setText(item == null || empty ? null : item.getDisplayName());
+			setText(item == null || empty ? null : "[%s] %s".formatted(item.getCategory(), item.getName()));
 		}
 	}
 
@@ -240,7 +239,7 @@ public class Filters {
 	}
 
 	private class FilterCell extends ListCell<Filter> {
-		private final Button delete = new Button(null, new Glyph("FontAwesome", FontAwesome.Glyph.MINUS_CIRCLE));
+		private final Button delete = new Button(null, new Glyph(FONT_AWESOME, FontAwesome.Glyph.MINUS_CIRCLE));
 
 		public FilterCell() {
 			delete.setFocusTraversable(false);
@@ -258,7 +257,7 @@ public class Filters {
 				final BorderPane content = new BorderPane();
 				content.setLeft(new BorderPane(new SelectableLabel(filter.display())));
 				content.setRight(delete);
-				delete.setOnAction(event -> Filters.this.filters.getItems().remove(filter));
+				delete.setOnAction(event -> PropertyFilters.this.filters.getItems().remove(filter));
 				setGraphic(content);
 			}
 		}

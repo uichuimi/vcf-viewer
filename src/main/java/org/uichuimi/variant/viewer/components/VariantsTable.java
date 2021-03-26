@@ -26,9 +26,13 @@ import java.util.stream.Collectors;
 public class VariantsTable {
 
 	@FXML
-	private BorderPane filters;
+	private BorderPane propertyFilters;
 	@FXML
-	private Filters filtersController;
+	private PropertyFilters propertyFiltersController;
+	@FXML
+	private BorderPane genotypeFilters;
+	@FXML
+	private GenotypeFilters genotypeFiltersController;
 	@FXML
 	private BorderPane properties;
 	@FXML
@@ -55,7 +59,6 @@ public class VariantsTable {
 	private boolean queryable;
 	private boolean gzipped;
 	private File file;
-	private VcfIndex index;
 
 
 	public void setFile(final File file) {
@@ -89,15 +92,16 @@ public class VariantsTable {
 			header = reader.getHeader();
 			queryable = reader.isQueryable();
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
-			filtersController.setMetadata(header);
+			propertyFiltersController.setMetadata(header);
 		} catch (Exception e) {
+			e.printStackTrace();
 			MainView.error(e);
 		}
 		final Indexer indexer = new Indexer(file);
 		MainView.launch(indexer);
 		indexer.setOnSucceeded(workerStateEvent -> {
 			final VcfIndex index = indexer.getValue();
-			filtersController.setMetadata(index);
+			propertyFiltersController.setMetadata(index);
 		});
 	}
 
@@ -107,7 +111,7 @@ public class VariantsTable {
 			int read = 0;
 			int filtered = 0;
 			for (final VariantContext context : reader) {
-				if (filtersController.filter(context)) {
+				if (propertyFiltersController.filter(context)) {
 					variantsTable.getItems().add(context);
 					filtered++;
 					if (filtered >= 20) break;
@@ -140,7 +144,7 @@ public class VariantsTable {
 		variantsTable.getSelectionModel().selectedItemProperty().addListener((obs, prev, variant) -> select(variant));
 		variantsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		variantsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		filtersController.filter().addListener((ListChangeListener<Filter>) change -> fill());
+		propertyFiltersController.filter().addListener((ListChangeListener<Filter>) change -> fill());
 
 	}
 

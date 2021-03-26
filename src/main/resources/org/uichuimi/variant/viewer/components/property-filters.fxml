@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.CheckComboBox?>
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.uichuimi.variant.viewer.components.Filters">
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.uichuimi.variant.viewer.components.PropertyFilters">
 	<top>
 		<VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER" spacing="10">
 			<padding>

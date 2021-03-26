@@ -6,12 +6,20 @@
 			fx:controller="org.uichuimi.variant.viewer.components.VariantsTable">
 	<center>
 		<SplitPane dividerPositions="0.15,0.85">
-			<VBox>
-				<VBox styleClass="section-title">
-					<Label text="FILTERS"/>
+			<SplitPane orientation="VERTICAL">
+				<VBox>
+					<VBox styleClass="section-title">
+						<Label text="FILTERS (PROPERTIES)"/>
+					</VBox>
+					<fx:include fx:id="propertyFilters" source="property-filters.fxml"/>
 				</VBox>
-				<fx:include fx:id="filters" source="filters.fxml"/>
-			</VBox>
+				<VBox>
+					<VBox styleClass="section-title">
+						<Label text="FILTERS (GENOTYPES)"/>
+					</VBox>
+					<fx:include fx:id="genotypeFilters" source="genotype-filters.fxml"/>
+				</VBox>
+			</SplitPane>
 			<VBox>
 				<VBox styleClass="section-title">
 					<Label text="VARIANTS"/>
