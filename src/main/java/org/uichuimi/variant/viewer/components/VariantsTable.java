@@ -1,14 +1,13 @@
 package org.uichuimi.variant.viewer.components;
 
-import htsjdk.tribble.index.Index;
-import htsjdk.tribble.index.tabix.TabixFormat;
-import htsjdk.tribble.index.tabix.TabixIndexCreator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.*;
+import htsjdk.variant.vcf.VCFConstants;
+import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
@@ -17,14 +16,11 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import org.uichuimi.variant.VcfIndex;
 import org.uichuimi.variant.viewer.components.filter.Filter;
-import org.uichuimi.variant.viewer.utils.Chromosome;
-import org.uichuimi.variant.viewer.utils.GenomeProgress;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
 import java.util.stream.Collectors;
 
 public class VariantsTable {
@@ -153,75 +149,4 @@ public class VariantsTable {
 		genotypesController.select(variant);
 	}
 
-	private static class Indexer extends Task<VcfIndex> {
-
-		private static final int LIMIT = 75;
-		private final File file;
-
-		public Indexer(final File file) {
-			this.file = file;
-		}
-
-		@Override
-		protected VcfIndex call() {
-			final Map<String, Set<String>> options = new TreeMap<>();
-			maybeTabix();
-			try (VCFFileReader reader = new VCFFileReader(file, false)) {
-				final Chromosome.Namespace namespace = Chromosome.Namespace.guess(reader.getHeader());
-				reader.getHeader().getInfoHeaderLines().stream()
-					.filter(line -> line.getType() == VCFHeaderLineType.String)
-					.forEach(line -> options.put(line.getID(), new TreeSet<>()));
-				int line = 0;
-				for (final VariantContext variant : reader) {
-					// Add new options
-					for (final String id : options.keySet()) {
-						final Set<String> set = options.get(id);
-						final Object value = variant.getCommonInfo().getAttribute(id);
-						if (value == null) continue;
-						final List<Object> values;
-						if (value instanceof List) {
-							values = (List<Object>) value;
-						} else {
-							values = List.of(value);
-						}
-						for (final Object o : values) {
-							set.add((String) o);
-						}
-					}
-					// Check too long options
-					for (final String id : new ArrayList<>(options.keySet())) {
-						if (options.get(id).size() > LIMIT) {
-							options.remove(id);
-						}
-					}
-					if (line++ % 1000 == 0) {
-						updateProgress(GenomeProgress.getProgress(variant, namespace), 1);
-						updateMessage("Indexing " + variant.getContig() + " : " + variant.getStart());
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			options.forEach((id, opts) -> System.out.printf("%s (%d) = %s%n", id, opts.size(), opts));
-			return new VcfIndex(options);
-		}
-
-		private void maybeTabix()  {
-			try (VCFFileReader reader = new VCFFileReader(file, false)) {
-				if (!reader.isQueryable()) {
-					System.out.println("File needs index");
-					final TabixIndexCreator tabixIndexCreator = new TabixIndexCreator(TabixFormat.VCF);
-					long pos = 0;
-					tabixIndexCreator.setIndexSequenceDictionary(reader.getHeader().getSequenceDictionary());
-					for (final VariantContext variantContext : reader) {
-						tabixIndexCreator.addFeature(variantContext, pos++);
-					}
-					final Index index = tabixIndexCreator.finalizeIndex(pos);
-					index.writeBasedOnFeatureFile(file);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 }

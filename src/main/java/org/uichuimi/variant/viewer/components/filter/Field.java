@@ -58,7 +58,6 @@ public class Field {
 
 	public enum Type {
 		TEXT(List.of(Operator.TEXT_CONTAINS, Operator.TEXT_EQUAL, Operator.TEXT_NOT_EQUAL)),
-		MULTIPLE(List.of(Operator.TEXT_EQUAL)),
 		FLOAT(List.of(Operator.FLOAT_LOWER, Operator.FLOAT_LOWER_OR_EQUAL, Operator.FLOAT_EQUAL, Operator.FLOAT_GREATER_OR_EQUAL, Operator.FLOAT_GREATER)),
 		INTEGER(List.of(Operator.INT_LOWER, Operator.INT_LOWER_OR_EQUAL, Operator.INT_EQUAL, Operator.INT_GREATER_OR_EQUAL, Operator.INT_GREATER)),
 		FLAG(List.of(Operator.FLAG_PRESENT, Operator.FLAG_NOT_PRESENT));

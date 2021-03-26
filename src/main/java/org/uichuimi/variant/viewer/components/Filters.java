@@ -10,7 +10,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.CheckComboBox;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.Glyph;
+import org.controlsfx.glyphfont.GlyphFont;
+import org.controlsfx.glyphfont.GlyphFontRegistry;
 import org.uichuimi.variant.VcfIndex;
 import org.uichuimi.variant.viewer.components.filter.Field;
 import org.uichuimi.variant.viewer.components.filter.FieldBuilder;
@@ -18,9 +23,12 @@ import org.uichuimi.variant.viewer.components.filter.Filter;
 import org.uichuimi.variant.viewer.components.filter.Operator;
 
 import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class Filters {
+
+	private final static GlyphFont fontAwesome = GlyphFontRegistry.font("FontAwesome");
 
 	@FXML
 	private  TextField textEntry;
@@ -59,13 +67,13 @@ public class Filters {
 		field.getItems().clear();
 		field.getItems().addAll(chromField(), posField(), filterField(), qualField(), idField());
 		for (final VCFInfoHeaderLine line : header.getInfoHeaderLines()) {
-			field.getItems().addAll(toField(line));
+			field.getItems().add(toField(line));
 		}
 	}
 
 	private Field chromField() {
 		final List<String> contigs = header.getContigLines().stream().map(VCFContigHeaderLine::getID).collect(Collectors.toList());
-		return new Field(Field.Type.MULTIPLE, contigs, VariantContext::getContig, "Chromosome", false);
+		return new Field(Field.Type.TEXT, contigs, VariantContext::getContig, "Chromosome", false);
 	}
 
 	private Field posField() {
@@ -74,7 +82,7 @@ public class Filters {
 
 	private Field filterField() {
 		final List<String> fltrs = header.getFilterLines().stream().map(VCFSimpleHeaderLine::getID).collect(Collectors.toList());
-		return new Field(Field.Type.MULTIPLE, fltrs, VariantContext::getFilters, "Filter", true);
+		return new Field(Field.Type.TEXT, fltrs, VariantContext::getFilters, "Filter", true);
 	}
 
 	private Field qualField() {
@@ -100,9 +108,7 @@ public class Filters {
 	 * @param index source index
 	 */
 	public void setMetadata(final VcfIndex index) {
-		for (final Filter filter : filters.getItems()) {
-
-		}
+		this.field.getItems().setAll(index.getFields());
 	}
 
 	public ObservableList<Filter> filter() {
@@ -111,6 +117,8 @@ public class Filters {
 
 	@FXML
 	private void add() {
+		if (operator == null) return;
+		if (field.getValue().isList() && accessor == null) return;
 		final Object value;
 		if (field.getValue().getType() == Field.Type.INTEGER) {
 			try {
@@ -125,12 +133,16 @@ public class Filters {
 				return;
 			}
 		} else if (field.getValue().getType() == Field.Type.TEXT) {
-			value = textEntry.getText();
-		} else if (field.getValue().getType() == Field.Type.MULTIPLE) {
-			value = multipleEntry.getCheckModel().getCheckedItems();
+			if (field.getValue().getOptions().isEmpty()) {
+				if (StringUtils.isBlank(textEntry.getText())) return;
+				value = textEntry.getText();
+			} else {
+				if (multipleEntry.getCheckModel().getCheckedItems().isEmpty()) return;
+				value = new TreeSet<>(multipleEntry.getCheckModel().getCheckedItems());
+			}
 		} else if (field.getValue().getType() == Field.Type.FLAG) {
 			value = false;
-		} else value = null;
+		} else return;
 		final Filter filter = new Filter(field.getValue(), accessor.getValue(), operator.getValue(), value);
 		System.out.println(filter);
 		filters.getItems().add(filter);
@@ -180,6 +192,7 @@ public class Filters {
 		// Set operators and select first
 		operator.getItems().setAll(field.getOperators());
 		operator.setValue(field.getOperators().iterator().next());
+		operator.setDisable(false);
 
 		// Set value box
 		switch (field.getType()) {
@@ -192,14 +205,18 @@ public class Filters {
 				valueHolder.getChildren().setAll(integerEntry);
 				integerEntry.setText("");
 			}
-			case MULTIPLE -> {
-				valueHolder.getChildren().setAll(multipleEntry);
-				multipleEntry.getItems().setAll(field.getOptions());
-				multipleEntry.getCheckModel().clearChecks();
-			}
 			case TEXT -> {
-				valueHolder.getChildren().setAll(textEntry);
-				textEntry.setText(null);
+				if (field.getOptions().isEmpty()) {
+					valueHolder.getChildren().setAll(textEntry);
+					textEntry.setText(null);
+				} else {
+					valueHolder.getChildren().setAll(multipleEntry);
+					multipleEntry.getItems().setAll(field.getOptions());
+					multipleEntry.getCheckModel().clearChecks();
+					operator.getItems().setAll(Operator.TEXT_EQUAL);
+					operator.setValue(Operator.TEXT_EQUAL);
+					operator.setDisable(true);
+				}
 			}
 			case FLAG -> valueHolder.getChildren().clear();
 		}
@@ -223,7 +240,13 @@ public class Filters {
 	}
 
 	private class FilterCell extends ListCell<Filter> {
-		private final Label delete = new Label("X");
+		private final Button delete = new Button(null, new Glyph("FontAwesome", FontAwesome.Glyph.MINUS_CIRCLE));
+
+		public FilterCell() {
+			delete.setFocusTraversable(false);
+			delete.getStyleClass().add("icon-button");
+			delete.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+		}
 
 		@Override
 		protected void updateItem(final Filter filter, final boolean empty) {
@@ -233,9 +256,9 @@ public class Filters {
 				setGraphic(null);
 			} else {
 				final BorderPane content = new BorderPane();
-				content.setLeft(new SelectableLabel(filter.display()));
+				content.setLeft(new BorderPane(new SelectableLabel(filter.display())));
 				content.setRight(delete);
-				delete.setOnMouseClicked(event -> Filters.this.filters.getItems().remove(filter));
+				delete.setOnAction(event -> Filters.this.filters.getItems().remove(filter));
 				setGraphic(content);
 			}
 		}

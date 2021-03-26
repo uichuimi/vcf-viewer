@@ -15,7 +15,7 @@ public class SelectableLabel extends Label {
 		StackPane textStack = new StackPane();
 		TextField textField = new TextField(value);
 		textField.setEditable(false);
-		textField.setStyle("-fx-background-color: transparent; -fx-background-insets: 0; -fx-background-radius: 0; -fx-padding: 0;");
+		textField.setStyle("-fx-background-color: transparent; -fx-background-insets: 0; -fx-background-radius: 0; -fx-padding: 0; -fx-border-width: 0");
 		// the invisible label is a hack to get the textField to size like a label.
 		Label label = new Label();
 		label.textProperty().bind(textProperty());

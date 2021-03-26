@@ -13,6 +13,10 @@ public class FieldBuilder {
 	}
 
 	public static Field create(final VCFInfoHeaderLine line) {
+		return create(line, List.of());
+	}
+
+	public static Field create(final VCFInfoHeaderLine line, final List<String> options) {
 		final Field.Type type = switch (line.getType()) {
 			case Flag -> Field.Type.FLAG;
 			case Float -> Field.Type.FLOAT;
@@ -20,7 +24,6 @@ public class FieldBuilder {
 			case String, Character -> Field.Type.TEXT;
 		};
 		// Options cannot be known from header line, they must be computed by scanning the file
-		final List<String> options = List.of();
 		final String name = line.getID();
 		final boolean list = line.getCountType() != VCFHeaderLineCount.INTEGER || line.getCount() > 1;
 

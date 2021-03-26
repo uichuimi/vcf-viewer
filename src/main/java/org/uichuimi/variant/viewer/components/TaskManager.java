@@ -47,8 +47,12 @@ public class TaskManager {
 				this.task.setValue(null);
 				next();
 			}
+			if (task.getException() != null) {
+				task.getException().printStackTrace();
+			}
 		});
 		this.task.setValue(task);
-		new Thread(task).start();
+		final Thread thread = new Thread(task);
+		thread.start();
 	}
 }

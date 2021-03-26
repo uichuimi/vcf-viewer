@@ -9,10 +9,11 @@ import java.util.Set;
 public class VcfIndex {
 
 
-	private List<Field> fields;
+	private final List<Field> fields;
 
-	public VcfIndex(final Map<String, Set<String>> options) {
+	public VcfIndex(final Map<String, Set<String>> options, final List<Field> fields) {
 
+		this.fields = fields;
 	}
 
 	public List<Field> getFields() {

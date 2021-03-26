@@ -6,11 +6,11 @@
 <?import org.controlsfx.control.CheckComboBox?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.uichuimi.variant.viewer.components.Filters">
 	<top>
-		<VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
+		<VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER" spacing="10">
 			<padding>
 				<Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
 			</padding>
-			<GridPane hgap="5.0">
+			<GridPane hgap="10.0" vgap="10.0">
 				<columnConstraints>
 					<ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0"/>
 					<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>

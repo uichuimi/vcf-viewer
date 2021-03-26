@@ -1,5 +1,12 @@
+.root {
+	-fx-darker-color: #e63d00;
+	-fx-main-color: Coral;
+	-fx-light-color: PeachPuff;
+	-fx-lighter-color: PapayaWhip;
+}
+
 .root, .border-pane, .split-pane {
-	-fx-background-color: papayawhip;
+	-fx-background-color: -fx-lighter-color;
 }
 
 .table-row-cell:selected .table-column {
@@ -11,7 +18,7 @@
 }
 
 .scroll-bar:vertical .thumb, .scroll-bar:horizontal .thumb {
-	-fx-background-color: coral;
+	-fx-background-color: -fx-main-color;
 }
 
 .show-hide-columns-button {
@@ -19,14 +26,14 @@
 }
 
 .show-hide-column-image {
-	-fx-background-color: Coral;
+	-fx-background-color: -fx-main-color;
 }
 
 .scroll-bar:vertical .increment-arrow,
 .scroll-bar:vertical .decrement-arrow,
 .scroll-bar:horizontal .increment-arrow,
 .scroll-bar:horizontal .decrement-arrow {
-	-fx-background-color: coral;
+	-fx-background-color: -fx-main-color;
 }
 
 .drag-over {
@@ -34,6 +41,11 @@
 	-fx-border-radius: 15px;
 	-fx-border-color: darkgrey;
 	-fx-border-style: dashed;
+}
+
+.table-view {
+	-fx-border-width: 1;
+	-fx-border-color: lightgrey;
 }
 
 .table-view, .column-header-background, .filler {
@@ -58,7 +70,7 @@
 }
 
 .table-view .table-row-cell:selected {
-	-fx-background-color: PeachPuff;
+	-fx-background-color: -fx-light-color;
 }
 
 
@@ -75,7 +87,42 @@
 }
 
 .hyperlink {
-	-fx-text-fill: coral;
+	-fx-text-fill: -fx-main-color;
+}
+
+
+.section-title {
+	-fx-font-size: 0.9em;
+	-fx-background-color: -fx-main-color;
+	-fx-alignment: center;
+	-fx-padding: 5px;
+}
+
+.section-title .label {
+	-fx-text-fill: -fx-lighter-color;
+	-fx-font-weight: bold;
+}
+
+.error {
+	-fx-border-color: tomato;
+}
+
+.button, .toggle-button {
+	-fx-background-color: -fx-main-color;
+	-fx-text-fill: -fx-lighter-color;
+	-fx-font-weight: bold;
+}
+
+.toggle-button:selected {
+	-fx-background-color: -fx-darker-color;
+}
+
+.button:hover {
+	-fx-opacity: 85%;
+}
+
+.button:armed {
+	-fx-background-color: -fx-darker-color;
 }
 
 .chip {
@@ -86,6 +133,8 @@
 	-fx-padding: 2px 5px 2px 5px;
 	-fx-background-color: transparent;
 	-fx-graphic-text-gap: 5px;
+	-fx-text-fill: -fx-text-base-color;
+	-fx-font-weight: normal;
 }
 
 .chip:hover {
@@ -93,29 +142,66 @@
 }
 
 .chip:selected {
-	-fx-background-color: PeachPuff;
+	-fx-background-color: -fx-light-color;
 	-fx-content-display: left;
-	-fx-border-color: coral;
-	-fx-text-fill: coral;
+	-fx-border-color: -fx-main-color;
+	-fx-text-fill: -fx-main-color;
 	-fx-font-weight: bold;
 }
 
-.section-title {
-	-fx-font-size: 0.9em;
-	-fx-background-color: coral;
-	-fx-alignment: center;
-	-fx-padding: 5px;
+.list-view .list-cell:selected {
+	-fx-background-color: -fx-light-color;
+	-fx-text-fill: -fx-text-base-color;
 }
 
-.section-title .label {
-	-fx-text-fill: papayawhip;
-	-fx-font-weight: bold;
-}
-
-.error {
-	-fx-border-color: tomato;
+.list-view .list-cell:hover {
+	-fx-background-color: -fx-main-color;
 }
 
 .list-cell:empty {
 	-fx-background-color: transparent;
+}
+
+.text-field {
+	-fx-background-color: white;
+	-fx-border-width: 2px;
+	-fx-border-color: -fx-light-color;
+}
+
+.text-field:focused {
+	-fx-border-color: -fx-main-color;
+}
+
+.date-picker .arrow-button {
+	-fx-background-color: white;
+}
+
+.date-picker .button {
+	-fx-background-color: transparent;
+}
+
+.combo-box, .choice-box {
+	-fx-background-color: -fx-light-color;
+	-fx-border-color: -fx-main-color;
+}
+
+.progress-bar .track {
+	-fx-background-color: -fx-light-color;
+}
+
+.progress-bar .bar {
+	-fx-background-color: -fx-main-color;
+}
+
+.progress-indicator .indicator {
+	-fx-background-color: -fx-light-color;
+}
+
+.progress-indicator .progress {
+	-fx-background-color: -fx-main-color;
+}
+
+.icon-button {
+	-fx-background-color: transparent;
+	-fx-content-display: graphic_only;
 }
