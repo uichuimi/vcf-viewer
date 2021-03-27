@@ -4,11 +4,16 @@ import htsjdk.variant.variantcontext.VariantContext;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
 
-public class CoordinateCell extends TableCell<VariantContext, VariantContext> {
+import java.text.NumberFormat;
+import java.util.Locale;
 
+public class NumberCell extends TableCell<VariantContext, Double> {
+
+	private final NumberFormat numberFormat = NumberFormat.getInstance(Locale.ENGLISH);
 	private final SelectableLabel label = new SelectableLabel();
 
-	public CoordinateCell() {
+	public NumberCell(final int decimals) {
+		numberFormat.setMaximumFractionDigits(decimals);
 		label.setAlignment(Pos.CENTER_RIGHT);
 		label.focusedProperty().addListener((obs, prev, focused) -> {
 			if (focused) getTableView().getSelectionModel().select(getIndex());
@@ -16,13 +21,12 @@ public class CoordinateCell extends TableCell<VariantContext, VariantContext> {
 	}
 
 	@Override
-	protected void updateItem(final VariantContext variant, final boolean empty) {
-		super.updateItem(variant, empty);
-		if (empty || variant == null) {
-			setText(null);
+	protected void updateItem(final Double item, final boolean empty) {
+		super.updateItem(item, empty);
+		if (empty || item == null) {
 			setGraphic(null);
 		} else {
-			label.setText(String.format("%s:%,d", variant.getContig(), variant.getStart()));
+			label.setText(numberFormat.format(item));
 			setGraphic(label);
 		}
 	}

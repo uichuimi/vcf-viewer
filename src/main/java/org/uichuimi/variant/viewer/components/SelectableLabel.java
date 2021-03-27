@@ -24,5 +24,8 @@ public class SelectableLabel extends Label {
 		textProperty().bindBidirectional(textField.textProperty());
 		setGraphic(textStack);
 		setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+		alignmentProperty().bindBidirectional(label.alignmentProperty());
+		alignmentProperty().bindBidirectional(textField.alignmentProperty());
+		textField.focusedProperty().addListener((observableValue, aBoolean, t1) -> setFocused(t1));
 	}
 }

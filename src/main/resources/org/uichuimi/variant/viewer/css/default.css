@@ -1,3 +1,4 @@
+/* top right bottom left */
 .root {
 	-fx-darker-color: #e63d00;
 	-fx-main-color: Coral;
@@ -44,8 +45,8 @@
 }
 
 .table-view {
-	-fx-border-width: 1;
-	-fx-border-color: -fx-main-color;
+	/*-fx-border-width: 1;*/
+	/*-fx-border-color: -fx-main-color;*/
 }
 
 .table-view, .column-header-background, .filler {
@@ -97,6 +98,8 @@
 	-fx-background-color: -fx-main-color;
 	-fx-alignment: center;
 	-fx-padding: 5px;
+	-fx-border-width: 0 1 0 1;
+	-fx-border-color: -fx-lighter-color;
 }
 
 .section-title .label {
@@ -150,17 +153,25 @@
 	-fx-font-weight: bold;
 }
 
-.list-view .list-cell:selected {
+.list-view {
 	-fx-background-color: -fx-light-color;
-	-fx-text-fill: -fx-text-base-color;
+}
+
+.list-view .list-cell {
+	-fx-background-color: transparent;
 }
 
 .list-view .list-cell:hover {
 	-fx-background-color: -fx-main-color;
 }
 
-.list-cell:empty {
+.list-view .list-cell:empty {
 	-fx-background-color: transparent;
+}
+
+.list-view .list-cell:selected {
+	-fx-background-color: -fx-lighter-color;
+	-fx-text-fill: -fx-text-base-color;
 }
 
 .text-field {

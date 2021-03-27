@@ -5,8 +5,6 @@ import org.uichuimi.variant.viewer.components.filter.Field;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class VcfIndex implements Serializable {
 
@@ -16,7 +14,7 @@ public class VcfIndex implements Serializable {
 	private final List<Field> fields;
 	private final long lineCount;
 
-	public VcfIndex(final Map<String, Set<String>> options, final List<Field> fields, final long lineCount) {
+	public VcfIndex(final List<Field> fields, final long lineCount) {
 		this.fields = fields;
 		this.lineCount = lineCount;
 	}

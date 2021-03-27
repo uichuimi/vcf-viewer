@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class VariantsTable {
@@ -57,19 +58,20 @@ public class VariantsTable {
 	@FXML
 	private TableColumn<VariantContext, String> alternate;
 	@FXML
+	private TableColumn<VariantContext, Set<String>> filters;
+	@FXML
+	private TableColumn<VariantContext, Double> quality;
+	@FXML
 	private Label placeholder;
 
 	private VCFHeader header;
-	private boolean queryable;
-	private boolean gzipped;
 	private File file;
 
 
 	public void setFile(final File file) {
 		this.file = file;
 		placeholder.setText("No data in " + file.getAbsolutePath());
-		gzipped = isGzipped(file);
-		if (VCFFileReader.isBCF(file) && gzipped) {
+		if (VCFFileReader.isBCF(file) && isGzipped(file)) {
 			MainView.error("Cannot read compressed BCF files, please decompress with bcftools view -Ou -o output.bcf input.bcf");
 			return;
 		}
@@ -94,7 +96,6 @@ public class VariantsTable {
 	private void index() {
 		try (VCFFileReader reader = new VCFFileReader(file, false)) {
 			header = reader.getHeader();
-			queryable = reader.isQueryable();
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
 			propertyFiltersController.setMetadata(header);
 		} catch (Exception e) {
@@ -116,11 +117,11 @@ public class VariantsTable {
 			int filtered = 0;
 			for (final VariantContext context : reader) {
 				if (propertyFiltersController.filter(context)) {
-					variantsTable.getItems().add(context);
 					filtered++;
-					if (filtered >= 20) break;
+					if (filtered <= 50) {
+						variantsTable.getItems().add(context);
+					}
 				}
-//				if (read >= 100) break;
 			}
 			filteredVariants.setText("Filtered variants: %d".formatted(filtered));
 		}
@@ -145,10 +146,14 @@ public class VariantsTable {
 		reference.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getReference().getBaseString()));
 		reference.setCellFactory(column -> new AlleleCell());
 		alternate.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getAlternateAlleles().stream().map(Allele::toString).collect(Collectors.joining(","))));
+		filters.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getFilters()));
+		filters.setCellFactory(column -> new FiltersCell());
+		quality.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getPhredScaledQual()));
+		quality.setCellFactory(column -> new NumberCell(2));
 		variantsTable.getSelectionModel().selectedItemProperty().addListener((obs, prev, variant) -> select(variant));
 		variantsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		variantsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		propertyFiltersController.filter().addListener((ListChangeListener<Filter>) change -> fill());
+		propertyFiltersController.filterList().addListener((ListChangeListener<Filter>) change -> fill());
 
 	}
 

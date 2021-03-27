@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
@@ -33,11 +34,16 @@
 						<TableColumn fx:id="coordinate" text="Coordinate"/>
 						<TableColumn fx:id="reference" text="Reference"/>
 						<TableColumn fx:id="alternate" text="Alternate"/>
+						<TableColumn fx:id="filters" text="Filter"/>
+						<TableColumn fx:id="quality" text="Quality"/>
 					</columns>
 				</TableView>
-				<FlowPane style="-fx-border-color: -fx-main-color; -fx-border-width: 0 1 1 1" hgap="10">
+				<FlowPane hgap="10">
 					<Label fx:id="totalVariants"/>
 					<Label fx:id="filteredVariants"/>
+					<padding>
+						<Insets top="5" left="5" right="5" bottom="5"/>
+					</padding>
 				</FlowPane>
 			</VBox>
 			<SplitPane orientation="VERTICAL">

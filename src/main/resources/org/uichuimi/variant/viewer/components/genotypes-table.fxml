@@ -20,9 +20,10 @@
 	</center>
 
 	<bottom>
-		<FlowPane alignment="CENTER" fx:id="selectors" vgap="5" hgap="5"/>
+		<FlowPane alignment="CENTER" fx:id="selectors" vgap="5" hgap="5">
+			<padding>
+				<Insets top="5" bottom="5"/>
+			</padding>
+		</FlowPane>
 	</bottom>
-	<padding>
-		<Insets top="5" bottom="5"/>
-	</padding>
 </BorderPane>

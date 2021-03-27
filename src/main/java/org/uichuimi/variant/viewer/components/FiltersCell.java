@@ -4,25 +4,30 @@ import htsjdk.variant.variantcontext.VariantContext;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
 
-public class CoordinateCell extends TableCell<VariantContext, VariantContext> {
+import java.util.Set;
+
+public class FiltersCell extends TableCell<VariantContext, Set<String>> {
 
 	private final SelectableLabel label = new SelectableLabel();
 
-	public CoordinateCell() {
-		label.setAlignment(Pos.CENTER_RIGHT);
+	public FiltersCell() {
 		label.focusedProperty().addListener((obs, prev, focused) -> {
 			if (focused) getTableView().getSelectionModel().select(getIndex());
 		});
+		label.setAlignment(Pos.CENTER);
 	}
 
 	@Override
-	protected void updateItem(final VariantContext variant, final boolean empty) {
-		super.updateItem(variant, empty);
-		if (empty || variant == null) {
-			setText(null);
+	protected void updateItem(final Set<String> filters, final boolean empty) {
+		super.updateItem(filters, empty);
+		if (empty) {
 			setGraphic(null);
 		} else {
-			label.setText(String.format("%s:%,d", variant.getContig(), variant.getStart()));
+			if (filters == null || filters.isEmpty()) {
+				label.setText("-");
+			} else {
+				label.setText(String.join(",", filters));
+			}
 			setGraphic(label);
 		}
 	}

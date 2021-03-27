@@ -109,7 +109,7 @@ public class PropertyFilters {
 		this.field.getItems().setAll(index.getFields());
 	}
 
-	public ObservableList<Filter> filter() {
+	public ObservableList<Filter> filterList() {
 		return filters.getItems();
 	}
 
