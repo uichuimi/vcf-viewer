@@ -62,8 +62,8 @@
 
 .table-view .table-row-cell {
 	-fx-border-width: 0 0 2 0;
-	-fx-border-color: -fx-light-color;
-	-fx-background-color: transparent;
+	-fx-border-color: -fx-lighter-color;
+	-fx-background-color: -fx-light-color;
 }
 
 .table-view .table-row-cell:empty {
@@ -71,7 +71,11 @@
 }
 
 .table-view .table-row-cell:selected {
-	-fx-background-color: -fx-light-color;
+	-fx-background-color: -fx-main-color;
+}
+
+.table-view .table-row-cell:hover {
+	-fx-background-color: -fx-lighter-color;
 }
 
 
