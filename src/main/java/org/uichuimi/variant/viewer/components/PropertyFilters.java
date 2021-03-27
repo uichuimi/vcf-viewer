@@ -178,8 +178,11 @@ public class PropertyFilters {
 		});
 
 		filters.setCellFactory(val -> new FilterCell());
+		filters.setSelectionModel(new NoSelectionModel<>());
 
 		// Kick out entry controls
+		// NOTE: the reason for these controls to be initialised inside the valueHolder
+		// is to kee the traverse order
 		valueHolder.getChildren().clear();
 	}
 
