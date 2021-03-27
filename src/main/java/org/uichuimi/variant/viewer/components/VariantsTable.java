@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 public class VariantsTable {
 
 	@FXML
+	private Label totalVariants;
+	@FXML
+	private Label filteredVariants;
+	@FXML
 	private BorderPane propertyFilters;
 	@FXML
 	private PropertyFilters propertyFiltersController;
@@ -102,13 +106,13 @@ public class VariantsTable {
 		indexer.setOnSucceeded(workerStateEvent -> {
 			final VcfIndex index = indexer.getValue();
 			propertyFiltersController.setMetadata(index);
+			totalVariants.setText("Total variants: %d".formatted(index.getLineCount()));
 		});
 	}
 
 	private void fill() {
 		variantsTable.getItems().clear();
 		try (VCFFileReader reader = new VCFFileReader(file, false)) {
-			int read = 0;
 			int filtered = 0;
 			for (final VariantContext context : reader) {
 				if (propertyFiltersController.filter(context)) {
@@ -116,9 +120,9 @@ public class VariantsTable {
 					filtered++;
 					if (filtered >= 20) break;
 				}
-				read += 1;
 //				if (read >= 100) break;
 			}
+			filteredVariants.setText("Filtered variants: %d".formatted(filtered));
 		}
 	}
 

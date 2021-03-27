@@ -53,6 +53,7 @@ class Indexer extends Task<VcfIndex> {
 		final Set<String> contigs = new LinkedHashSet<>();
 		final Set<String> filters = new LinkedHashSet<>();
 		maybeTabix();
+		long lineCount = 0;
 		VCFHeader header = null;
 		try (VCFFileReader reader = new VCFFileReader(file, false)) {
 			header = reader.getHeader();
@@ -60,7 +61,6 @@ class Indexer extends Task<VcfIndex> {
 			reader.getHeader().getInfoHeaderLines().stream()
 				.filter(line -> line.getType() == VCFHeaderLineType.String)
 				.forEach(line -> options.put(line.getID(), new TreeSet<>()));
-			int line = 0;
 			for (final VariantContext variant : reader) {
 				// Add new options
 				contigs.add(variant.getContig());
@@ -81,7 +81,7 @@ class Indexer extends Task<VcfIndex> {
 						options.remove(id);
 					}
 				}
-				if (line++ % 1000 == 0) {
+				if (lineCount++ % 1000 == 0) {
 					updateProgress(GenomeProgress.getProgress(variant, namespace), 1);
 					updateMessage("Indexing " + variant.getContig() + " : " + variant.getStart());
 				}
@@ -97,11 +97,7 @@ class Indexer extends Task<VcfIndex> {
 		for (final VCFInfoHeaderLine line : header.getInfoHeaderLines()) {
 			fields.add(toField(line, options.getOrDefault(line.getID(), Set.of())));
 		}
-		for (final Field field : fields) {
-			System.out.println(field);
-		}
-
-		return new VcfIndex(options, fields);
+		return new VcfIndex(options, fields, lineCount);
 	}
 
 	private void maybeTabix() {

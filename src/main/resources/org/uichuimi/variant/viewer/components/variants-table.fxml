@@ -35,6 +35,10 @@
 						<TableColumn fx:id="alternate" text="Alternate"/>
 					</columns>
 				</TableView>
+				<FlowPane style="-fx-border-color: -fx-main-color; -fx-border-width: 0 1 1 1" hgap="10">
+					<Label fx:id="totalVariants"/>
+					<Label fx:id="filteredVariants"/>
+				</FlowPane>
 			</VBox>
 			<SplitPane orientation="VERTICAL">
 				<VBox alignment="TOP_CENTER">

@@ -9,7 +9,7 @@
 		<fx:include source="welcome.fxml" />
 	</center>
 	<bottom>
-		<BorderPane>
+		<BorderPane style="-fx-border-width: 1 0 0 0; -fx-border-color: -fx-main-color">
 			<right>
 				<FlowPane alignment="CENTER_RIGHT" columnHalignment="RIGHT" hgap="5" BorderPane.alignment="CENTER_RIGHT">
 					<ProgressBar fx:id="progress" visible="false" />

@@ -83,8 +83,8 @@
 }
 
 .split-pane-divider {
-	-fx-pref-width: 1;
-	-fx-background-color: -fx-lighter-color;
+	-fx-pref-width: 1px;
+	-fx-background-color: -fx-main-color;
 }
 
 .hyperlink {
