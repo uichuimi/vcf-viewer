@@ -184,6 +184,10 @@ public class PropertyFilters {
 		// NOTE: the reason for these controls to be initialised inside the valueHolder
 		// is to kee the traverse order
 		valueHolder.getChildren().clear();
+
+		integerEntry.setOnAction(event -> add());
+		floatEntry.setOnAction(event -> add());
+		textEntry.setOnAction(event -> add());
 	}
 
 	private void updateOptions() {
