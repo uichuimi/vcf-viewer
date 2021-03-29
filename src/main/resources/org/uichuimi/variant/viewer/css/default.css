@@ -57,6 +57,7 @@
 	-fx-border-width: 0 0 2 0;
 	-fx-border-color: -fx-main-color;
 	-fx-font-weight: bold;
+	-fx-font-size: 0.8em;
 	/*-fx-padding: 5;*/
 }
 
@@ -86,7 +87,6 @@
 	-fx-pref-height: 32px;
 	-fx-border-width: 0;
 	-fx-background-color: transparent;
-	-fx-font-size: 0.9em;
 }
 
 .table-view .table-row-cell:selected .hyperlink {

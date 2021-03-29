@@ -11,10 +11,10 @@
 	<center>
 		<TableView fx:id="table" prefHeight="9999">
 			<columns>
-				<TableColumn fx:id="sample" text="Sample"/>
-				<TableColumn fx:id="alleles" text="Alleles"/>
-				<TableColumn fx:id="genotype" text="Genotype"/>
-				<TableColumn fx:id="count" text="Allele count"/>
+				<TableColumn fx:id="sample" text="SAMPLE"/>
+				<TableColumn fx:id="alleles" text="ALLELES"/>
+				<TableColumn fx:id="genotype" text="GENOTYPE"/>
+				<TableColumn fx:id="count" text="COUNTS"/>
 			</columns>
 		</TableView>
 	</center>
