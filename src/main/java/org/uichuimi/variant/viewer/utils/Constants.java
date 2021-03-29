@@ -9,6 +9,7 @@ public class Constants {
 	public static final String POS = "POS";
 	public static final String CHROM = "CHROM";
 	public static final String ALT = "ALT";
+	public static final String EMPTY_CELL = "-";
 
 	private Constants() {
 	}

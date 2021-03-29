@@ -2,6 +2,7 @@ package org.uichuimi.variant.viewer.components.filter;
 
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFConstants;
 import org.uichuimi.variant.viewer.utils.Constants;
 
 import java.io.IOException;
@@ -30,7 +31,19 @@ public class Field implements Serializable {
 		this.category = category;
 		this.name = name;
 		this.list = list;
-		this.extractor = createExtractor();
+		this.extractor = createExtractorMain();
+	}
+
+	private Function<VariantContext, Object> createExtractorMain() {
+		final Function<VariantContext, Object> extractor = createExtractor();
+		return variantContext -> {
+			final Object attribute = variantContext.getAttribute(name);
+			if (attribute == null || attribute.equals(VCFConstants.EMPTY_ID_FIELD)) {
+				return null;
+			} else {
+				return extractor.apply(variantContext);
+			}
+		};
 	}
 
 	private Function<VariantContext, Object> createExtractor() {
@@ -61,7 +74,7 @@ public class Field implements Serializable {
 				default -> throw new IllegalArgumentException("No standard column " + name);
 			};
 		} else if (category == Category.FORMAT) {
-			return null;
+			throw new UnsupportedOperationException("Category field not supported");
 		} else throw new IllegalArgumentException("Unknown category " + category);
 	}
 
@@ -107,7 +120,7 @@ public class Field implements Serializable {
 	private void readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
 		// perform the default de-serialization first
 		inputStream.defaultReadObject();
-		extractor = createExtractor();
+		extractor = createExtractorMain();
 	}
 
 	public enum Category {

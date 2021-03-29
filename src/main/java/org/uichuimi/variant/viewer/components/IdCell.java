@@ -4,6 +4,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFConstants;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TableCell;
+import org.uichuimi.variant.viewer.utils.Constants;
 
 import java.awt.*;
 import java.io.IOException;
@@ -21,7 +22,7 @@ class IdCell extends TableCell<VariantContext, String> {
 			if (id.startsWith("rs")) {
 				setGraphic(getUrlHyperlink(id));
 			} else {
-				setText(id.equals(VCFConstants.EMPTY_ID_FIELD) ? "-" : id);
+				setText(id.equals(VCFConstants.EMPTY_ID_FIELD) ? Constants.EMPTY_CELL : id);
 			}
 		}
 	}

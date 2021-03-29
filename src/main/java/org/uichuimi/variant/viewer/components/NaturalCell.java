@@ -20,6 +20,7 @@ public class NaturalCell<S, T> extends TableCell<S, T> {
 		textProperty().bindBidirectional(label.textProperty());
 		setGraphic(label);
 		textAlignmentProperty().bindBidirectional(label.textAlignmentProperty());
+		alignmentProperty().bindBidirectional(label.alignmentProperty());
 	}
 
 	@Override

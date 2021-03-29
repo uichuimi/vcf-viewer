@@ -3,6 +3,7 @@ package org.uichuimi.variant.viewer.components;
 import htsjdk.variant.variantcontext.VariantContext;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
+import org.uichuimi.variant.viewer.utils.Constants;
 
 import java.util.Set;
 
@@ -24,7 +25,7 @@ public class FiltersCell extends TableCell<VariantContext, Set<String>> {
 			setGraphic(null);
 		} else {
 			if (filters == null || filters.isEmpty()) {
-				label.setText("-");
+				label.setText(Constants.EMPTY_CELL);
 			} else {
 				label.setText(String.join(",", filters));
 			}
