@@ -69,6 +69,7 @@ public class VariantsTable {
 	private Label placeholder;
 
 	private VCFHeader header;
+	private VcfIndex index;
 	private File file;
 
 
@@ -102,6 +103,7 @@ public class VariantsTable {
 			header = reader.getHeader();
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
 			propertyFiltersController.setMetadata(header);
+			genotypeFiltersController.setMetadata(header);
 		} catch (Exception e) {
 			e.printStackTrace();
 			MainView.error(e);
@@ -109,7 +111,7 @@ public class VariantsTable {
 		final Indexer indexer = new Indexer(file);
 		MainView.launch(indexer);
 		indexer.setOnSucceeded(workerStateEvent -> {
-			final VcfIndex index = indexer.getValue();
+			index = indexer.getValue();
 			propertyFiltersController.setMetadata(index);
 			totalVariants.setText("Total variants: %,d".formatted(index.getLineCount()));
 		});
@@ -122,6 +124,8 @@ public class VariantsTable {
 			protected Void call() {
 				try (VCFFileReader reader = new VCFFileReader(file, false)) {
 					final AtomicInteger filtered = new AtomicInteger();
+					final AtomicInteger read = new AtomicInteger();
+
 					for (final VariantContext context : reader) {
 						if (propertyFiltersController.filter(context)) {
 							filtered.incrementAndGet();
@@ -129,6 +133,9 @@ public class VariantsTable {
 								Platform.runLater(() -> variantsTable.getItems().add(context));
 							}
 							Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get()))); }
+						if (index != null) {
+							updateProgress(read.incrementAndGet(), index.getLineCount());
+						}
 					}
 				}
 				return null;
@@ -168,6 +175,7 @@ public class VariantsTable {
 		variantsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		variantsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		propertyFiltersController.filterList().addListener((ListChangeListener<Filter>) change -> Platform.runLater(this::fill));
+		genotypeFiltersController.setOnFilter(() -> Platform.runLater(this::fill));
 
 	}
 

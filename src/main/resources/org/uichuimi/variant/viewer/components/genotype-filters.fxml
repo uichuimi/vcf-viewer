@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1"
 			xmlns:fx="http://javafx.com/fxml/1"
 			fx:controller="org.uichuimi.variant.viewer.components.GenotypeFilters">
 	<center>
+		<VBox spacing="5">
+			<TextField fx:id="search" promptText="Search" onKeyTyped="#filterSampleTable"/>
+			<TableView fx:id="sampleTable">
+				<columns>
+					<TableColumn fx:id="sample" text="SAMPLE"/>
+					<TableColumn fx:id="noCall" text="NO_CALL"/>
+					<TableColumn fx:id="homRef" text="HOM_REF"/>
+					<TableColumn fx:id="het" text="HET"/>
+					<TableColumn fx:id="homVar" text="HOM_VAR"/>
+				</columns>
+			</TableView>
+		</VBox>
 
 	</center>
 </BorderPane>
