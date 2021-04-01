@@ -13,10 +13,12 @@ public class VcfIndex implements Serializable {
 
 	private final List<Field> fields;
 	private final long lineCount;
+	private final List<long[]> gts;
 
-	public VcfIndex(final List<Field> fields, final long lineCount) {
+	public VcfIndex(final List<Field> fields, final long lineCount, final List<long[]> gts) {
 		this.fields = fields;
 		this.lineCount = lineCount;
+		this.gts = gts;
 	}
 
 	public List<Field> getFields() {
@@ -25,5 +27,9 @@ public class VcfIndex implements Serializable {
 
 	public long getLineCount() {
 		return lineCount;
+	}
+
+	public List<long[]> getGts() {
+		return gts;
 	}
 }

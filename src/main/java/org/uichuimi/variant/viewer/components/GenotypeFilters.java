@@ -1,5 +1,8 @@
 package org.uichuimi.variant.viewer.components;
 
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypeType;
+import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFHeader;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -42,12 +45,14 @@ public class GenotypeFilters {
 
 	public void setMetadata(VCFHeader header) {
 		filters = header.getGenotypeSamples().stream().map(GtFilter::new).collect(Collectors.toList());
+		CHANGE_LISTENER.setInactive();
 		filters.stream().flatMap(gtFilter -> Stream.of(
 			gtFilter.noCallProperty(),
 			gtFilter.homRefProperty(),
 			gtFilter.hetProperty(),
 			gtFilter.homVarProperty()))
 			.forEach(booleanProperty -> booleanProperty.addListener(CHANGE_LISTENER));
+		CHANGE_LISTENER.setActive();
 		filterSampleTable();
 	}
 
@@ -58,6 +63,28 @@ public class GenotypeFilters {
 		filters.stream()
 			.filter(gtFilter -> gtFilter.sample.toLowerCase().contains(term))
 			.forEach(sampleTable.getItems()::add);
+	}
+
+	public boolean filter(final VariantContext variant) {
+		for (final GtFilter filter : filters) {
+			final Genotype genotype = variant.getGenotype(filter.sample);
+			final GenotypeType type = genotype.getType();
+			switch (type) {
+				case HET -> {
+					if (!filter.het.getValue()) return false;
+				}
+				case HOM_REF -> {
+					if (!filter.homRef.getValue()) return false;
+				}
+				case HOM_VAR -> {
+					if (!filter.homVar.getValue()) return false;
+				}
+				case NO_CALL, MIXED, UNAVAILABLE -> {
+					if (!filter.noCall.getValue()) return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	public void setOnFilter(final NoArgFunction onFilter) {

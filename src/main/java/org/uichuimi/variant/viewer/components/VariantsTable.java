@@ -1,6 +1,7 @@
 package org.uichuimi.variant.viewer.components;
 
 import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFConstants;
 import htsjdk.variant.vcf.VCFFileReader;
@@ -19,6 +20,7 @@ import javafx.scene.layout.BorderPane;
 import org.uichuimi.variant.VcfIndex;
 import org.uichuimi.variant.viewer.components.filter.Filter;
 import org.uichuimi.variant.viewer.utils.Constants;
+import org.uichuimi.variant.viewer.utils.Indexer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -81,7 +83,7 @@ public class VariantsTable {
 			return;
 		}
 		index();
-		fill();
+		reload();
 	}
 
 	private boolean isGzipped(final File file) {
@@ -101,7 +103,16 @@ public class VariantsTable {
 	private void index() {
 		try (VCFFileReader reader = new VCFFileReader(file, false)) {
 			header = reader.getHeader();
+			System.out.println("genotypeSamples: " + header.getGenotypeSamples());
+			System.out.println("sampleNamesInOrder: " + header.getSampleNamesInOrder());
+			System.out.println("namestoOffset: " + header.getSampleNameToOffset());
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
+			for (final VariantContext context : reader) {
+				for (final Genotype genotype : context.getGenotypes()) {
+					System.out.println(genotype.getType());
+				}
+				break;
+			}
 			propertyFiltersController.setMetadata(header);
 			genotypeFiltersController.setMetadata(header);
 		} catch (Exception e) {
@@ -115,9 +126,10 @@ public class VariantsTable {
 			propertyFiltersController.setMetadata(index);
 			totalVariants.setText("Total variants: %,d".formatted(index.getLineCount()));
 		});
+		indexer.setOnFailed(event -> MainView.error(indexer.getException()));
 	}
 
-	private void fill() {
+	private void reload() {
 		variantsTable.getItems().clear();
 		MainView.launch(new Task<Void>() {
 			@Override
@@ -126,11 +138,11 @@ public class VariantsTable {
 					final AtomicInteger filtered = new AtomicInteger();
 					final AtomicInteger read = new AtomicInteger();
 
-					for (final VariantContext context : reader) {
-						if (propertyFiltersController.filter(context)) {
+					for (final VariantContext variant : reader) {
+						if (propertyFiltersController.filter(variant) && genotypeFiltersController.filter(variant)) {
 							filtered.incrementAndGet();
 							if (filtered.get() <= 50) {
-								Platform.runLater(() -> variantsTable.getItems().add(context));
+								Platform.runLater(() -> variantsTable.getItems().add(variant));
 							}
 							Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get()))); }
 						if (index != null) {
@@ -174,8 +186,8 @@ public class VariantsTable {
 		variantsTable.getSelectionModel().selectedItemProperty().addListener((obs, prev, variant) -> select(variant));
 		variantsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		variantsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		propertyFiltersController.filterList().addListener((ListChangeListener<Filter>) change -> Platform.runLater(this::fill));
-		genotypeFiltersController.setOnFilter(() -> Platform.runLater(this::fill));
+		propertyFiltersController.filterList().addListener((ListChangeListener<Filter>) change -> Platform.runLater(this::reload));
+		genotypeFiltersController.setOnFilter(() -> Platform.runLater(this::reload));
 
 	}
 

@@ -44,7 +44,7 @@ public class MainView {
 		alert.showAndWait();
 	}
 
-	public static void error(Exception e) {
+	public static void error(Throwable e) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle("Error");
 		alert.setHeaderText(null);
