@@ -1,7 +1,6 @@
 package org.uichuimi.variant.viewer.components;
 
 import htsjdk.variant.variantcontext.Allele;
-import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFConstants;
 import htsjdk.variant.vcf.VCFFileReader;
@@ -73,6 +72,7 @@ public class VariantsTable {
 	private VCFHeader header;
 	private VcfIndex index;
 	private File file;
+	private Task<Void> reader;
 
 
 	public void setFile(final File file) {
@@ -103,16 +103,7 @@ public class VariantsTable {
 	private void index() {
 		try (VCFFileReader reader = new VCFFileReader(file, false)) {
 			header = reader.getHeader();
-			System.out.println("genotypeSamples: " + header.getGenotypeSamples());
-			System.out.println("sampleNamesInOrder: " + header.getSampleNamesInOrder());
-			System.out.println("namestoOffset: " + header.getSampleNameToOffset());
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
-			for (final VariantContext context : reader) {
-				for (final Genotype genotype : context.getGenotypes()) {
-					System.out.println(genotype.getType());
-				}
-				break;
-			}
 			propertyFiltersController.setMetadata(header);
 			genotypeFiltersController.setMetadata(header);
 		} catch (Exception e) {
@@ -120,39 +111,21 @@ public class VariantsTable {
 			MainView.error(e);
 		}
 		final Indexer indexer = new Indexer(file);
-		MainView.launch(indexer);
 		indexer.setOnSucceeded(workerStateEvent -> {
 			index = indexer.getValue();
 			propertyFiltersController.setMetadata(index);
+			genotypeFiltersController.setMetadata(index);
 			totalVariants.setText("Total variants: %,d".formatted(index.getLineCount()));
 		});
 		indexer.setOnFailed(event -> MainView.error(indexer.getException()));
+		MainView.launch(indexer);
 	}
 
 	private void reload() {
 		variantsTable.getItems().clear();
-		MainView.launch(new Task<Void>() {
-			@Override
-			protected Void call() {
-				try (VCFFileReader reader = new VCFFileReader(file, false)) {
-					final AtomicInteger filtered = new AtomicInteger();
-					final AtomicInteger read = new AtomicInteger();
-
-					for (final VariantContext variant : reader) {
-						if (propertyFiltersController.filter(variant) && genotypeFiltersController.filter(variant)) {
-							filtered.incrementAndGet();
-							if (filtered.get() <= 50) {
-								Platform.runLater(() -> variantsTable.getItems().add(variant));
-							}
-							Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get()))); }
-						if (index != null) {
-							updateProgress(read.incrementAndGet(), index.getLineCount());
-						}
-					}
-				}
-				return null;
-			}
-		});
+		if (reader != null) reader.cancel();
+		reader = new Reader();
+		MainView.launch(reader);
 	}
 
 	private TableColumn<VariantContext, String> createInfoColumn(VCFInfoHeaderLine info) {
@@ -196,4 +169,27 @@ public class VariantsTable {
 		genotypesController.select(variant);
 	}
 
+	private class Reader extends Task<Void> {
+		@Override
+		protected Void call() {
+			try (VCFFileReader reader = new VCFFileReader(file, false)) {
+				final AtomicInteger filtered = new AtomicInteger();
+				final AtomicInteger read = new AtomicInteger();
+
+				for (final VariantContext variant : reader) {
+					if (propertyFiltersController.filter(variant) && genotypeFiltersController.filter(variant, read.get())) {
+						filtered.incrementAndGet();
+						if (filtered.get() <= 50) {
+							Platform.runLater(() -> variantsTable.getItems().add(variant));
+						}
+						Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get())));
+					}
+					if (index != null) {
+						updateProgress(read.incrementAndGet(), index.getLineCount());
+					}
+				}
+			}
+			return null;
+		}
+	}
 }

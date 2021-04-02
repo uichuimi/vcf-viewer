@@ -69,7 +69,7 @@ public class GenotypesTable {
 	}
 
 	private String alleleCount(final Genotype genotype) {
-		if (genotype == null) return null;
+		if (variant == null || genotype == null) return null;
 		final StringJoiner joiner = new StringJoiner(", ");
 		for (int i = 0; i < genotype.getAD().length; i++) {
 			joiner.add(variant.getAlleles().get(i).getBaseString() + "=" + genotype.getAD()[i]);

@@ -6,8 +6,9 @@ import java.util.StringJoiner;
  * Methods extracted from BitSet, to allow working with plain long arrays.
  */
 public class BitUtils {
-	static final int ADDRESS_BITS_PER_WORD = 6;
+	private static final int ADDRESS_BITS_PER_WORD = 6;
 	private static final int BITS_PER_WORD = 1 << ADDRESS_BITS_PER_WORD;
+	private static final long WORD_MASK = 0xffffffffffffffffL;
 
 	/**
 	 * Sets the bit at position bit to true
@@ -15,7 +16,7 @@ public class BitUtils {
 	 * @param words array of words representing a bit set
 	 * @param bit   position og the bit to be set to true
 	 */
-	static void set(long[] words, int bit) {
+	public static void set(long[] words, int bit) {
 		final int word = wordIndex(bit);
 		words[word] |= (1L << bit);
 	}
@@ -36,7 +37,7 @@ public class BitUtils {
 	 * @param words array of words representing a bit set
 	 * @param bit   position og the bit to be set to false
 	 */
-	static void clear(long[] words, int bit) {
+	public static void clear(long[] words, int bit) {
 		final int word = wordIndex(bit);
 		words[word] &= ~(1L << bit);
 	}
@@ -47,7 +48,7 @@ public class BitUtils {
 	 * @param a one of the bitsets
 	 * @param b the other bitset
 	 */
-	static boolean intersects(long[] a, long[] b) {
+	public static boolean intersects(long[] a, long[] b) {
 		for (int w = 0; w < a.length; w++) {
 			if ((a[w] & b[w]) != 0) return true;
 		}
@@ -60,6 +61,7 @@ public class BitUtils {
 	 * <pre>  {0,4,7,9}</pre>
 	 * represents the bitset:
 	 * <pre>  1000100101</pre>
+	 *
 	 * @param words a bitset
 	 * @return the string representation of the bitset
 	 */
@@ -77,4 +79,9 @@ public class BitUtils {
 	}
 
 
+	public static void flip(final long[] mask) {
+		for (int i = 0; i < mask.length; i++) {
+			mask[i] ^= WORD_MASK;
+		}
+	}
 }
