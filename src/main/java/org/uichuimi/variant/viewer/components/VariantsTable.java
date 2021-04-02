@@ -16,10 +16,10 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
-import org.uichuimi.variant.VcfIndex;
 import org.uichuimi.variant.viewer.components.filter.Filter;
+import org.uichuimi.variant.viewer.index.Indexer;
+import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.utils.Constants;
-import org.uichuimi.variant.viewer.utils.Indexer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -170,13 +170,16 @@ public class VariantsTable {
 	}
 
 	private class Reader extends Task<Void> {
+
 		@Override
 		protected Void call() {
 			try (VCFFileReader reader = new VCFFileReader(file, false)) {
 				final AtomicInteger filtered = new AtomicInteger();
 				final AtomicInteger read = new AtomicInteger();
 
+				Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get())));
 				for (final VariantContext variant : reader) {
+					if (isCancelled()) break;
 					if (propertyFiltersController.filter(variant) && genotypeFiltersController.filter(variant, read.get())) {
 						filtered.incrementAndGet();
 						if (filtered.get() <= 50) {
@@ -192,4 +195,5 @@ public class VariantsTable {
 			return null;
 		}
 	}
+
 }

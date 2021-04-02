@@ -1,4 +1,4 @@
-package org.uichuimi.variant;
+package org.uichuimi.variant.viewer.index;
 
 import org.uichuimi.variant.viewer.components.filter.Field;
 
@@ -13,12 +13,12 @@ public class VcfIndex implements Serializable {
 
 	private final List<Field> fields;
 	private final long lineCount;
-	private final List<long[]> gts;
+	private final GtBitsetArchive archive;
 
-	public VcfIndex(final List<Field> fields, final long lineCount, final List<long[]> gts) {
+	public VcfIndex(final List<Field> fields, final long lineCount, GtBitsetArchive archive) {
 		this.fields = fields;
 		this.lineCount = lineCount;
-		this.gts = gts;
+		this.archive = archive;
 	}
 
 	public List<Field> getFields() {
@@ -29,7 +29,8 @@ public class VcfIndex implements Serializable {
 		return lineCount;
 	}
 
-	public List<long[]> getGts() {
-		return gts;
+	public long[] getBitSet(String contig, int position) {
+		return archive.getBitSet(contig, position);
 	}
+
 }

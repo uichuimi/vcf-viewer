@@ -14,11 +14,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
-import org.uichuimi.variant.VcfIndex;
 import org.uichuimi.variant.viewer.components.filter.Field;
 import org.uichuimi.variant.viewer.components.filter.FieldBuilder;
 import org.uichuimi.variant.viewer.components.filter.Filter;
 import org.uichuimi.variant.viewer.components.filter.Operator;
+import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.utils.Constants;
 
 import java.util.List;

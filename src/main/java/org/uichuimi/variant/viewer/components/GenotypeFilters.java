@@ -12,7 +12,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import org.uichuimi.variant.VcfIndex;
+import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.utils.ActiveListener;
 import org.uichuimi.variant.viewer.utils.BitUtils;
 import org.uichuimi.variant.viewer.utils.Constants;
@@ -79,7 +79,7 @@ public class GenotypeFilters {
 		if (index == null)
 			return filterByHeader(variant);
 		else
-			return filterByIndex(position);
+			return filterByIndex(variant);
 	}
 
 	private boolean filterByHeader(final VariantContext variant) {
@@ -91,13 +91,13 @@ public class GenotypeFilters {
 		return true;
 	}
 
-	private boolean filterByIndex(final int position) {
+	private boolean filterByIndex(final VariantContext variant) {
 		// Mask is inverted, that means if we look for a NO_CALL in a given sample, mask is 0111 for that person.
 		// We then intersect the bitset of that person with the mask. If, and only if, the intersection is false (0),
 		// we can assume that the filter passes.
 		// This method  (inverse mask and !intersection) allows to query 16 samples with a single bitwise operation,
 		// since one single person that do not match the mask will result in a > 0 intersection.
-		return !BitUtils.intersects(mask, index.getGts().get(position));
+		return !BitUtils.intersects(mask, index.getBitSet(variant.getContig(), variant.getStart()));
 	}
 
 	public void setOnFilter(final NoArgFunction onFilter) {
