@@ -7,6 +7,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.stage.Stage;
+import org.apache.commons.lang3.StringUtils;
 import org.uichuimi.variant.viewer.utils.ViewTransitioner;
 
 import java.io.PrintWriter;
@@ -15,15 +17,15 @@ import java.util.Optional;
 
 public class MainView {
 
+	private static final TaskManager manager = new TaskManager();
 	private static BorderPane staticBorderPane;
+	private static Stage stage;
 	@FXML
 	private ProgressBar progress;
 	@FXML
 	private Label message;
 	@FXML
 	private BorderPane center;
-
-	private static final TaskManager manager = new TaskManager();
 
 	public static void setView(View view) {
 		setView(view, null);
@@ -88,6 +90,11 @@ public class MainView {
 	public static void launch(Task<?> task) {
 		manager.addToQueue(task);
 	}
+
+	public static void setTitle(String title) {
+		stage.setTitle(StringUtils.isBlank(title) ? "VCF viewer" : "VCF viewer - " + title);
+	}
+
 	@FXML
 	private void initialize() {
 		staticBorderPane = center;
@@ -106,5 +113,9 @@ public class MainView {
 				progress.setVisible(true);
 			}
 		});
+	}
+
+	public void setOwner(Stage stage) {
+		MainView.stage = stage;
 	}
 }

@@ -33,6 +33,7 @@ public class Indexer extends Task<VcfIndex> {
 		maybeTabix();
 		final File indexFile = new File(file.getAbsolutePath() + ".vcf-index");
 		if (indexFile.exists()) {
+			updateMessage("Reading index");
 			try (FileInputStream in = new FileInputStream(indexFile)) {
 				return (VcfIndex) new ObjectInputStream(in).readObject();
 			} catch (IOException | ClassNotFoundException e) {
@@ -41,6 +42,7 @@ public class Indexer extends Task<VcfIndex> {
 		}
 		final VcfIndex index = createIndex();
 		try (FileOutputStream out = new FileOutputStream(indexFile)) {
+			updateMessage("Saving index");
 			new ObjectOutputStream(out).writeObject(index);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -58,7 +60,6 @@ public class Indexer extends Task<VcfIndex> {
 		try (VCFFileReader reader = new VCFFileReader(file, false);
 		     GtBitsetArchiveBuilder gtBitsetArchiveBuilder = new GtBitsetArchiveBuilder(new File(zipFile), reader.getHeader())) {
 			header = reader.getHeader();
-			final List<String> people = header.getGenotypeSamples();
 			//  4 -> number of possible genotypes
 			// 64 -> number of bits in a long
 			final Chromosome.Namespace namespace = Chromosome.Namespace.guess(reader.getHeader());
@@ -109,21 +110,20 @@ public class Indexer extends Task<VcfIndex> {
 			needsIndex = false;
 		} catch (TribbleException ignored) {
 		}
-		if (needsIndex) {
-			updateMessage("Creating tabix index");
-			long pos = 0;
-			try (VCFFileReader reader = new VCFFileReader(file, false)) {
-				final TabixIndexCreator tabixIndexCreator = new TabixIndexCreator(TabixFormat.VCF);
-				tabixIndexCreator.setIndexSequenceDictionary(reader.getHeader().getSequenceDictionary());
-				int i = 0;
-				for (final VariantContext variant : reader) {
-					tabixIndexCreator.addFeature(variant, pos++);
-					if (i++ % 1000 == 0)
-						updateMessage("Creating tabix index (%s:%,d)".formatted(variant.getContig(), variant.getStart()));
-				}
-				final Index index = tabixIndexCreator.finalizeIndex(pos);
-				index.writeBasedOnFeatureFile(file);
+		if (!needsIndex) return;
+		updateMessage("Creating tabix index");
+		long pos = 0;
+		try (VCFFileReader reader = new VCFFileReader(file, false)) {
+			final TabixIndexCreator tabixIndexCreator = new TabixIndexCreator(TabixFormat.VCF);
+			tabixIndexCreator.setIndexSequenceDictionary(reader.getHeader().getSequenceDictionary());
+			int i = 0;
+			for (final VariantContext variant : reader) {
+				tabixIndexCreator.addFeature(variant, pos++);
+				if (i++ % 1000 == 0)
+					updateMessage("Creating tabix index (%s:%,d)".formatted(variant.getContig(), variant.getStart()));
 			}
+			final Index index = tabixIndexCreator.finalizeIndex(pos);
+			index.writeBasedOnFeatureFile(file);
 		}
 	}
 

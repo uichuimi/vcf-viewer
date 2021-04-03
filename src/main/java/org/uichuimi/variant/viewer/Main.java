@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.uichuimi.variant.viewer.components.MainView;
 
 public class Main extends Application {
 
@@ -17,8 +18,10 @@ public class Main extends Application {
 
 	@Override
 	public void start(final Stage stage) throws Exception {
-		Parent root = FXMLLoader.load(getClass().getResource("components/main-view.fxml"));
-
+		final FXMLLoader loader = new FXMLLoader(getClass().getResource("components/main-view.fxml"));
+		final Parent root = loader.load();
+		final MainView mainView = loader.getController();
+		mainView.setOwner(stage);
 		Scene scene = new Scene(root);
 		scene.getStylesheets().add(getClass().getResource("css/default.css").toExternalForm());
 
@@ -28,6 +31,5 @@ public class Main extends Application {
 		// Send exit signal to application, to enforce background tasks to stop
 		stage.setOnCloseRequest(a -> Runtime.getRuntime().exit(0));
 		stage.show();
-
 	}
 }

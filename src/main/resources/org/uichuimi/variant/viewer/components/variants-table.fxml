@@ -39,8 +39,8 @@
 					</columns>
 				</TableView>
 				<FlowPane hgap="10">
-					<Label fx:id="totalVariants"/>
-					<Label fx:id="filteredVariants"/>
+					<Label fx:id="totalVariants" styleClass="chip"/>
+					<Label fx:id="filteredVariants" styleClass="chip"/>
 					<padding>
 						<Insets top="5" left="5" right="5" bottom="5"/>
 					</padding>

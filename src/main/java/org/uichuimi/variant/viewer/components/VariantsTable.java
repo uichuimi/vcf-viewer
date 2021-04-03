@@ -181,16 +181,19 @@ public class VariantsTable {
 				for (final VariantContext variant : reader) {
 					if (isCancelled()) break;
 					if (propertyFiltersController.filter(variant) && genotypeFiltersController.filter(variant, read.get())) {
-						filtered.incrementAndGet();
-						if (filtered.get() <= 50) {
+						if (filtered.incrementAndGet() <= 50) {
 							Platform.runLater(() -> variantsTable.getItems().add(variant));
 						}
-						Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get())));
 					}
-					if (index != null) {
-						updateProgress(read.incrementAndGet(), index.getLineCount());
+					if (read.incrementAndGet() % 1000 == 0) {
+						Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get())));
+						if (index != null) {
+							updateProgress(read.get(), index.getLineCount());
+							updateMessage("%s:%,d".formatted(variant.getContig(), variant.getStart()));
+						}
 					}
 				}
+				Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get())));
 			}
 			return null;
 		}
