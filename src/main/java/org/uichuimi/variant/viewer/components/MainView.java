@@ -9,8 +9,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
+import org.uichuimi.variant.viewer.action.FileActions;
 import org.uichuimi.variant.viewer.utils.ViewTransitioner;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Optional;
@@ -25,7 +27,7 @@ public class MainView {
 	@FXML
 	private Label message;
 	@FXML
-	private BorderPane center;
+	private BorderPane root;
 
 	public static void setView(View view) {
 		setView(view, null);
@@ -95,9 +97,13 @@ public class MainView {
 		stage.setTitle(StringUtils.isBlank(title) ? "VCF viewer" : "VCF viewer - " + title);
 	}
 
+	public void setOwner(Stage stage) {
+		MainView.stage = stage;
+	}
+
 	@FXML
 	private void initialize() {
-		staticBorderPane = center;
+		staticBorderPane = root;
 		manager.taskProperty().addListener((obs, prev, task) -> {
 			message.textProperty().unbind();
 			progress.progressProperty().unbind();
@@ -115,7 +121,19 @@ public class MainView {
 		});
 	}
 
-	public void setOwner(Stage stage) {
-		MainView.stage = stage;
+	@FXML
+	private void open() {
+		final File file = FileActions.openVcf();
+		if (file != null) {
+			setTitle(file.getName());
+			setView(View.TABLE, (view, controller) -> ((VariantsTable) controller).setFile(file));
+		}
+	}
+
+	public void save() {
+		final File file = FileActions.saveVcf();
+		if (file != null) {
+			((VariantsTable)View.TABLE.getController()).save(file);
+		}
 	}
 }

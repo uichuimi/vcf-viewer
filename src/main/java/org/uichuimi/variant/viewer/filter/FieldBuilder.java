@@ -1,4 +1,4 @@
-package org.uichuimi.variant.viewer.components.filter;
+package org.uichuimi.variant.viewer.filter;
 
 import htsjdk.variant.vcf.VCFHeaderLineCount;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;

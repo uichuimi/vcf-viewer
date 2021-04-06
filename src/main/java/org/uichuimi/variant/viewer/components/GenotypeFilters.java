@@ -12,12 +12,14 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import org.uichuimi.variant.viewer.filter.VariantContextFilter;
 import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.utils.ActiveListener;
 import org.uichuimi.variant.viewer.utils.BitUtils;
 import org.uichuimi.variant.viewer.utils.Constants;
 import org.uichuimi.variant.viewer.utils.NoArgFunction;
 
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.function.Function;
@@ -75,7 +77,7 @@ public class GenotypeFilters {
 		this.index = index;
 	}
 
-	public boolean filter(final VariantContext variant, int position) {
+	public boolean filter(final VariantContext variant) {
 		if (index == null)
 			return filterByHeader(variant);
 		else
@@ -84,7 +86,7 @@ public class GenotypeFilters {
 
 	private boolean filterByHeader(final VariantContext variant) {
 		for (final GtFilter filter : filters) {
-			final Genotype genotype = variant.getGenotype(filter.sample);
+			final Genotype genotype = variant.getGenotype(filter.getSample());
 			final GenotypeType type = genotype.getType();
 			if (!filter.getGt(type).getValue()) return false;
 		}
@@ -143,10 +145,10 @@ public class GenotypeFilters {
 
 	private void bindSelectAll() {
 		final List<Function<GtFilter, Property<Boolean>>> getters = List.of(
-			gtFilter3 -> gtFilter3.getGt(GenotypeType.NO_CALL),
+			gtFilter -> gtFilter.getGt(GenotypeType.NO_CALL),
 			gtFilter -> gtFilter.getGt(GenotypeType.HOM_REF),
-			gtFilter1 -> gtFilter1.getGt(GenotypeType.HET),
-			gtFilter2 -> gtFilter2.getGt(GenotypeType.HOM_VAR));
+			gtFilter -> gtFilter.getGt(GenotypeType.HET),
+			gtFilter -> gtFilter.getGt(GenotypeType.HOM_VAR));
 		for (final Function<GtFilter, Property<Boolean>> getter : getters) {
 			// Listen to changes in GtFilter.ALL and apply new value to all filters.
 			// After this, re-filter
@@ -164,6 +166,15 @@ public class GenotypeFilters {
 	private void changed() {
 		onFilter.call();
 		mask = createMask();
+	}
+
+	public VariantContextFilter getFilter() {
+		if (index == null) {
+			return new UnmodifiableSimpleFilter(filters);
+		} else {
+			return new UnmodifiableIndexedFilter(mask, index);
+		}
+
 	}
 
 	private static class GtFilter {
@@ -186,4 +197,39 @@ public class GenotypeFilters {
 	}
 
 
-}
+	private static class UnmodifiableSimpleFilter implements VariantContextFilter {
+
+		private final Collection<GtFilter> filters;
+
+		public UnmodifiableSimpleFilter(final Collection<GtFilter> filters) {
+			this.filters = List.copyOf(filters);
+		}
+
+		@Override
+		public boolean filter(VariantContext variantContext) {
+			for (final GtFilter filter : filters) {
+				final Genotype genotype = variantContext.getGenotype(filter.getSample());
+				final GenotypeType type = genotype.getType();
+				if (!filter.getGt(type).getValue()) return false;
+			}
+			return true;
+		}
+	}
+
+	private static class UnmodifiableIndexedFilter implements VariantContextFilter {
+
+		private final long[] mask;
+		private final VcfIndex index;
+
+		public UnmodifiableIndexedFilter(final long[] mask, final VcfIndex index) {
+			this.mask = mask;
+			this.index = index;
+		}
+
+		@Override
+		public boolean filter(VariantContext variant) {
+			return !BitUtils.intersects(mask, index.getBitSet(variant.getContig(), variant.getStart()));
+		}
+	}
+
+	}

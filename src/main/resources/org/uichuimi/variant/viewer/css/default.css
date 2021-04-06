@@ -227,3 +227,8 @@
 	-fx-background-color: transparent;
 	-fx-content-display: graphic_only;
 }
+
+.menu-button:hover, .menu-button:focused, .menu-button:selected, .menu-button:pressed, .menu-button:showing,
+.menu-item:hover, .menu-item:focused, .menu-item:selected {
+	-fx-background-color: -fx-main-color;
+}

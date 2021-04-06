@@ -6,7 +6,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import org.uichuimi.variant.viewer.Main;
+import org.uichuimi.variant.viewer.action.FileActions;
 
 import java.io.File;
 import java.util.List;
@@ -45,9 +45,7 @@ public class Welcome {
 
 	private void onDragDropped(final DragEvent dragEvent) {
 		final File file = dragFile(dragEvent);
-		if (isVcf(file)) {
-			open(file);
-		}
+		if (isVcf(file)) open(file);
 	}
 
 	private void onDragExited(final DragEvent dragEvent) {
@@ -55,14 +53,8 @@ public class Welcome {
 	}
 
 	private void open(MouseEvent event) {
-		FileChooser chooser = new FileChooser();
-		chooser.setTitle("Select VCF file");
-		chooser.setInitialDirectory(new File(System.getProperty("user.home")));
-		chooser.getExtensionFilters().addAll(VCF);
-		chooser.setSelectedExtensionFilter(VCF);
-		final File file = chooser.showOpenDialog(Main.getWindow());
+		final File file = FileActions.openVcf();
 		if (file != null) open(file);
-
 	}
 
 	private File dragFile(final DragEvent event) {

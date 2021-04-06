@@ -1,6 +1,6 @@
 package org.uichuimi.variant.viewer.index;
 
-import org.uichuimi.variant.viewer.components.filter.Field;
+import org.uichuimi.variant.viewer.filter.Field;
 
 import java.io.Serial;
 import java.io.Serializable;

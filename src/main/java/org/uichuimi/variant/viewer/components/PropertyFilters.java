@@ -14,13 +14,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
-import org.uichuimi.variant.viewer.components.filter.Field;
-import org.uichuimi.variant.viewer.components.filter.FieldBuilder;
-import org.uichuimi.variant.viewer.components.filter.Filter;
-import org.uichuimi.variant.viewer.components.filter.Operator;
+import org.uichuimi.variant.viewer.filter.*;
 import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.utils.Constants;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -97,6 +95,10 @@ public class PropertyFilters {
 
 	public boolean filter(final VariantContext context) {
 		return filters.getItems().stream().allMatch(filter -> filter.filter(context));
+	}
+
+	public VariantContextFilter getFilter() {
+		return new PropertiesFilter(new ArrayList<>(filters.getItems()));
 	}
 
 	/**

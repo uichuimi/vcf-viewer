@@ -9,24 +9,25 @@ import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
-import org.uichuimi.variant.viewer.components.filter.Filter;
+import org.uichuimi.variant.viewer.filter.Filter;
+import org.uichuimi.variant.viewer.filter.VariantContextFilter;
 import org.uichuimi.variant.viewer.index.Indexer;
 import org.uichuimi.variant.viewer.index.VcfIndex;
+import org.uichuimi.variant.viewer.io.VariantContextPipe;
 import org.uichuimi.variant.viewer.utils.Constants;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class VariantsTable {
@@ -69,10 +70,9 @@ public class VariantsTable {
 	@FXML
 	private Label placeholder;
 
-	private VCFHeader header;
 	private VcfIndex index;
 	private File file;
-	private Task<Void> reader;
+	private VariantContextPipe reader;
 
 
 	public void setFile(final File file) {
@@ -82,6 +82,7 @@ public class VariantsTable {
 			MainView.error("Cannot read compressed BCF files, please decompress with bcftools view -Ou -o output.bcf input.bcf");
 			return;
 		}
+		initSubPanels();
 		index();
 		reload();
 	}
@@ -101,15 +102,6 @@ public class VariantsTable {
 	}
 
 	private void index() {
-		try (VCFFileReader reader = new VCFFileReader(file, false)) {
-			header = reader.getHeader();
-			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
-			propertyFiltersController.setMetadata(header);
-			genotypeFiltersController.setMetadata(header);
-		} catch (Exception e) {
-			e.printStackTrace();
-			MainView.error(e);
-		}
 		final Indexer indexer = new Indexer(file);
 		indexer.setOnSucceeded(workerStateEvent -> {
 			index = indexer.getValue();
@@ -121,10 +113,26 @@ public class VariantsTable {
 		MainView.launch(indexer);
 	}
 
+	private void initSubPanels() {
+		try (VCFFileReader reader = new VCFFileReader(file, false)) {
+			final VCFHeader header = reader.getHeader();
+			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
+			propertyFiltersController.setMetadata(header);
+			genotypeFiltersController.setMetadata(header);
+		} catch (Exception e) {
+			e.printStackTrace();
+			MainView.error(e);
+		}
+	}
+
 	private void reload() {
 		variantsTable.getItems().clear();
 		if (reader != null) reader.cancel();
-		reader = new Reader();
+		final Long lineCount = index == null ? null : index.getLineCount();
+		final List<VariantContextFilter> filterList = List.of(genotypeFiltersController.getFilter(), propertyFiltersController.getFilter());
+		reader = new VariantContextPipe(file, null, filterList, 50, lineCount);
+		reader.filteredProperty().addListener((obs, old, filtered) -> updateFiltered(filtered.intValue()));
+		variantsTable.setItems(reader.getVariants());
 		MainView.launch(reader);
 	}
 
@@ -169,34 +177,14 @@ public class VariantsTable {
 		genotypesController.select(variant);
 	}
 
-	private class Reader extends Task<Void> {
+	public void save(File file) {
+		final List<VariantContextFilter> filterList = List.of(propertyFiltersController.getFilter(), genotypeFiltersController.getFilter());
+		final VariantContextPipe pipe = new VariantContextPipe(this.file, file, filterList, 50, index.getLineCount());
+		MainView.launch(pipe);
+	}
 
-		@Override
-		protected Void call() {
-			try (VCFFileReader reader = new VCFFileReader(file, false)) {
-				final AtomicInteger filtered = new AtomicInteger();
-				final AtomicInteger read = new AtomicInteger();
-
-				Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get())));
-				for (final VariantContext variant : reader) {
-					if (isCancelled()) break;
-					if (propertyFiltersController.filter(variant) && genotypeFiltersController.filter(variant, read.get())) {
-						if (filtered.incrementAndGet() <= 50) {
-							Platform.runLater(() -> variantsTable.getItems().add(variant));
-						}
-					}
-					if (read.incrementAndGet() % 1000 == 0) {
-						Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get())));
-						if (index != null) {
-							updateProgress(read.get(), index.getLineCount());
-							updateMessage("%s:%,d".formatted(variant.getContig(), variant.getStart()));
-						}
-					}
-				}
-				Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(filtered.get())));
-			}
-			return null;
-		}
+	private void updateFiltered(int i) {
+		Platform.runLater(() -> filteredVariants.setText("Filtered variants: %,d".formatted(i)));
 	}
 
 }

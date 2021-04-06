@@ -1,4 +1,4 @@
-package org.uichuimi.variant.viewer.components.filter;
+package org.uichuimi.variant.viewer.filter;
 
 import java.util.function.BiFunction;
 
