@@ -2,25 +2,29 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
 			fx:controller="org.uichuimi.variant.viewer.components.VariantsTable">
 	<center>
-		<SplitPane dividerPositions="0.15,0.85" style="-fx-border-width: 0 0 0 2; -fx-border-color: -fx-light-color">
-			<SplitPane orientation="VERTICAL">
-				<VBox>
+		<SplitPane fx:id="center" dividerPositions="0.15,0.85"
+				   style="-fx-border-width: 0 0 0 2; -fx-border-color: -fx-light-color">
+			<!-- Left -->
+			<SplitPane fx:id="filtersDataPane" orientation="VERTICAL">
+				<VBox fx:id="propertyFiltersPane">
 					<VBox styleClass="section-title">
 						<Label text="FILTERS (PROPERTIES)"/>
 					</VBox>
 					<fx:include fx:id="propertyFilters" source="property-filters.fxml"/>
 				</VBox>
-				<VBox>
+				<VBox fx:id="genotypeFiltersPane">
 					<VBox styleClass="section-title">
 						<Label text="FILTERS (GENOTYPES)"/>
 					</VBox>
-					<fx:include fx:id="genotypeFilters" source="genotype-filters.fxml"/>
+					<fx:include VBox.vgrow="ALWAYS" fx:id="genotypeFilters" source="genotype-filters.fxml"/>
 				</VBox>
 			</SplitPane>
+			<!-- Center -->
 			<VBox>
 				<VBox styleClass="section-title">
 					<Label text="VARIANTS"/>
@@ -46,14 +50,15 @@
 					</padding>
 				</FlowPane>
 			</VBox>
-			<SplitPane orientation="VERTICAL">
-				<VBox alignment="TOP_CENTER">
+			<!-- Right -->
+			<SplitPane fx:id="additionalDataPane" orientation="VERTICAL">
+				<VBox fx:id="propertiesPane" alignment="TOP_CENTER">
 					<VBox styleClass="section-title">
 						<Label text="PROPERTIES"/>
 					</VBox>
 					<fx:include fx:id="properties" source="properties-table.fxml"/>
 				</VBox>
-				<VBox alignment="TOP_CENTER">
+				<VBox fx:id="genotypesPane" alignment="TOP_CENTER">
 					<VBox styleClass="section-title">
 						<Label text="GENOTYPES"/>
 					</VBox>
@@ -62,5 +67,29 @@
 			</SplitPane>
 		</SplitPane>
 	</center>
+	<right>
+		<FlowPane orientation="VERTICAL">
+			<Group>
+				<ToggleButton rotate="90" text="PROPERTIES" fx:id="showProperties" selected="true"
+							  style="-fx-font-size: 0.8em"/>
+			</Group>
+			<Group>
+				<ToggleButton rotate="90" text="GENOTYPES" fx:id="showGenotypes" selected="true"
+							  style="-fx-font-size: 0.8em"/>
+			</Group>
+		</FlowPane>
+	</right>
+	<left>
+		<FlowPane orientation="VERTICAL">
+			<Group>
+				<ToggleButton rotate="90" text="PROPERTIES" fx:id="showPropertyFilters" selected="true"
+							  style="-fx-font-size: 0.8em"/>
+			</Group>
+			<Group>
+				<ToggleButton rotate="90" text="GENOTYPES" fx:id="showGenotypeFilters" selected="true"
+							  style="-fx-font-size: 0.8em"/>
+			</Group>
+		</FlowPane>
+	</left>
 
 </BorderPane>

@@ -56,7 +56,6 @@ public class VariantContextPipe extends Task<ObservableList<VariantContext>> {
 
 		try (reader; writer) {
 			if (writer != null) writer.writeHeader(reader.getHeader());
-
 			for (final VariantContext variant : reader) {
 				if (isCancelled()) break;
 				if (filters.stream().allMatch(filter -> filter.filter(variant))) {

@@ -9,7 +9,7 @@
 	<center>
 		<VBox spacing="5">
 			<TextField fx:id="search" promptText="Search" onKeyTyped="#filterSampleTable"/>
-			<TableView fx:id="sampleTable">
+			<TableView VBox.vgrow="ALWAYS" fx:id="sampleTable">
 				<columns>
 					<TableColumn fx:id="sample" text="SAMPLE"/>
 					<TableColumn fx:id="noCall" text="NO_CALL"/>
