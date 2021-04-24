@@ -11,4 +11,6 @@ module vcf.viewer {
 
 	opens org.uichuimi.variant.viewer to javafx.graphics, javafx.fxml, javafx.controls;
 	opens org.uichuimi.variant.viewer.components to javafx.graphics, javafx.fxml, javafx.controls;
+
+	exports org.uichuimi.variant.viewer;
 }

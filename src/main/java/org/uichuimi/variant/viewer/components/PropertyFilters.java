@@ -27,6 +27,8 @@ public class PropertyFilters {
 
 	public static final String FONT_AWESOME = "FontAwesome";
 	@FXML
+	private CheckBox strict;
+	@FXML
 	private TextField textEntry;
 	@FXML
 	private TextField integerEntry;
@@ -144,7 +146,7 @@ public class PropertyFilters {
 		} else if (field.getValue().getType() == Field.Type.FLAG) {
 			value = false;
 		} else return;
-		final Filter filter = new Filter(field.getValue(), accessor.getValue(), operator.getValue(), value);
+		final Filter filter = new Filter(field.getValue(), accessor.getValue(), operator.getValue(), value, strict.isSelected());
 		System.out.println(filter);
 		filters.getItems().add(filter);
 	}

@@ -104,7 +104,7 @@
                     <destination>target/jmods</destination>
                     <module>vcf.viewer/org.uichuimi.variant.viewer.Main</module>
                     <modulePath>target/jmods</modulePath>
-                    <name>example</name>
+                    <name>vcf-viewer</name>
                 </configuration>
             </plugin>
         </plugins>

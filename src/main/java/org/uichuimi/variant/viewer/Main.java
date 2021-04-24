@@ -16,6 +16,9 @@ public class Main extends Application {
 		return window;
 	}
 
+	public static void main(String[] args) {
+		launch(args);
+	}
 	@Override
 	public void start(final Stage stage) throws Exception {
 		final FXMLLoader loader = new FXMLLoader(getClass().getResource("components/main-view.fxml"));

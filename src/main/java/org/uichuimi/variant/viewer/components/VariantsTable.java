@@ -154,7 +154,7 @@ public class VariantsTable {
 		if (reader != null) reader.cancel();
 		final Long lineCount = index == null ? null : index.getLineCount();
 		final List<VariantContextFilter> filterList = List.of(genotypeFiltersController.getFilter(), propertyFiltersController.getFilter());
-		reader = new VariantContextPipe(file, output, filterList, 50, lineCount);
+		reader = new VariantContextPipe(file, output, filterList, 2000, lineCount);
 		reader.filteredProperty().addListener((obs, old, filtered) -> updateFiltered(filtered.intValue()));
 		variantsTable.setItems(reader.getVariants());
 		MainView.launch(reader);

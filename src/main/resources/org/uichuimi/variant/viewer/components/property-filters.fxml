@@ -25,6 +25,7 @@
 				<Label text="Selector" GridPane.rowIndex="1"/>
 				<Label text="Operator" GridPane.rowIndex="2"/>
 				<Label text="Value" GridPane.rowIndex="3"/>
+				<Label text="Strict" GridPane.rowIndex="4"/>
 				<ComboBox fx:id="field" promptText="Field" GridPane.columnIndex="1"/>
 				<ComboBox fx:id="accessor" promptText="Selector" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 				<ComboBox fx:id="operator" promptText="Operator" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
@@ -34,6 +35,7 @@
 					<TextField fx:id="integerEntry"/>
 					<CheckComboBox fx:id="multipleEntry"/>
 				</VBox>
+				<CheckBox fx:id="strict" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 			</GridPane>
 			<Button minWidth="150.0" mnemonicParsing="false" text="Add" onAction="#add"/>
 		</VBox>

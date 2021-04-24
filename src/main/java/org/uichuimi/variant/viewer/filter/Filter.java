@@ -33,12 +33,14 @@ public class Filter {
 	private final Accessor accessor;
 	private final Operator operator;
 	private final Object value;
+	private final boolean strict;
 
-	public Filter(final Field field, final Accessor accessor, final Operator operator, final Object value) {
+	public Filter(final Field field, final Accessor accessor, final Operator operator, final Object value, boolean strict) {
 		this.field = field;
 		this.accessor = accessor;
 		this.operator = operator;
 		this.value = value;
+		this.strict = strict;
 	}
 
 	public Field getField() {
@@ -57,9 +59,13 @@ public class Filter {
 		return accessor;
 	}
 
+	public boolean isStrict() {
+		return strict;
+	}
+
 	public boolean filter(VariantContext variant) {
 		final Object value = field.extract(variant);
-		if (value == null) return false;
+		if (value == null) return !strict;
 		return filter(this.value, value);
 	}
 
@@ -92,6 +98,7 @@ public class Filter {
 			", accessor=" + accessor +
 			", operator=" + operator +
 			", value=" + value +
+			", strict=" + strict +
 			'}';
 	}
 
