@@ -8,12 +8,9 @@ import htsjdk.variant.vcf.VCFSimpleHeaderLine;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.CheckComboBox;
-import org.controlsfx.glyphfont.FontAwesome;
-import org.controlsfx.glyphfont.Glyph;
 import org.uichuimi.variant.viewer.filter.*;
 import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.utils.Constants;
@@ -181,12 +178,12 @@ public class PropertyFilters {
 			}
 		});
 
-		filters.setCellFactory(val -> new FilterCell());
+		filters.setCellFactory(val -> new FilterCell<>());
 		filters.setSelectionModel(new NoSelectionModel<>());
 
 		// Kick out entry controls
 		// NOTE: the reason for these controls to be initialised inside the valueHolder
-		// is to kee the traverse order
+		// is to keep the traverse order
 		valueHolder.getChildren().clear();
 
 		integerEntry.setOnAction(event -> add());
@@ -221,8 +218,8 @@ public class PropertyFilters {
 					textEntry.setText(null);
 				} else {
 					valueHolder.getChildren().setAll(multipleEntry);
-					multipleEntry.getItems().setAll(field.getOptions());
 					multipleEntry.getCheckModel().clearChecks();
+					multipleEntry.getItems().setAll(field.getOptions());
 					multipleEntry.setShowCheckedCount(true);
 					operator.getItems().setAll(Operator.TEXT_EQUAL);
 					operator.setValue(Operator.TEXT_EQUAL);
@@ -250,28 +247,4 @@ public class PropertyFilters {
 		}
 	}
 
-	private class FilterCell extends ListCell<Filter> {
-		private final Button delete = new Button(null, new Glyph(FONT_AWESOME, FontAwesome.Glyph.MINUS_CIRCLE));
-
-		public FilterCell() {
-			delete.setFocusTraversable(false);
-			delete.getStyleClass().add("icon-button");
-			delete.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-		}
-
-		@Override
-		protected void updateItem(final Filter filter, final boolean empty) {
-			super.updateItem(filter, empty);
-			setText(null);
-			if (empty || filter == null) {
-				setGraphic(null);
-			} else {
-				final BorderPane content = new BorderPane();
-				content.setLeft(new BorderPane(new SelectableLabel(filter.display())));
-				content.setRight(delete);
-				delete.setOnAction(event -> PropertyFilters.this.filters.getItems().remove(filter));
-				setGraphic(content);
-			}
-		}
-	}
 }

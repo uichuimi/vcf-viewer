@@ -100,7 +100,7 @@ public class Indexer extends Task<VcfIndex> {
 			for (final VCFInfoHeaderLine line : header.getInfoHeaderLines()) {
 				fields.add(toField(line, options.getOrDefault(line.getID(), Set.of())));
 			}
-			return new VcfIndex(fields, lineCount, gtBitsetArchiveBuilder.getArchive());
+			return new VcfIndex(fields, lineCount, gtBitsetArchiveBuilder.getArchive(), header.getGenotypeSamples());
 		}
 	}
 

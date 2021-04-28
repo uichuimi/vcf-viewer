@@ -5,7 +5,7 @@ import org.uichuimi.variant.viewer.components.Accessor;
 
 import java.util.Collection;
 
-public class Filter {
+public class Filter implements BaseFilter {
 	/*
 	 * field		| accessor	| operator		| value
 	 * ------------ | --------- | ------------- | ----------
@@ -102,6 +102,7 @@ public class Filter {
 			'}';
 	}
 
+	@Override
 	public String display() {
 		final StringBuilder builder = new StringBuilder();
 		if (field.isList()) builder.append(accessor).append(" ");
@@ -109,6 +110,9 @@ public class Filter {
 		builder.append(" ").append(operator.getDisplay());
 		if (value != null) {
 			builder.append(" ").append(value);
+		}
+		if (strict) {
+			builder.append(" (strict)");
 		}
 		return builder.toString();
 	}

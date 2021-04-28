@@ -1,24 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.CheckComboBox?>
+<?import org.uichuimi.variant.viewer.components.CustomNumericField?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1"
 			xmlns:fx="http://javafx.com/fxml/1"
 			fx:controller="org.uichuimi.variant.viewer.components.GenotypeFilters">
 	<center>
 		<VBox spacing="5">
-			<TextField fx:id="search" promptText="Search" onKeyTyped="#filterSampleTable"/>
-			<TableView VBox.vgrow="ALWAYS" fx:id="sampleTable">
-				<columns>
-					<TableColumn fx:id="sample" text="SAMPLE"/>
-					<TableColumn fx:id="noCall" text="NO_CALL"/>
-					<TableColumn fx:id="homRef" text="HOM_REF"/>
-					<TableColumn fx:id="het" text="HET"/>
-					<TableColumn fx:id="homVar" text="HOM_VAR"/>
-				</columns>
-			</TableView>
+			<GridPane hgap="5" vgap="5" VBox.vgrow="ALWAYS">
+				<Label text="Samples"/>
+				<CheckComboBox fx:id="samples" GridPane.columnIndex="1"/>
+				<Label text="Genotypes" GridPane.rowIndex="1"/>
+				<CheckComboBox fx:id="genotypes" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+				<Label text="Arity" GridPane.rowIndex="2"/>
+				<ComboBox fx:id="accessor" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+				<Label text="Number" GridPane.rowIndex="3"/>
+				<CustomNumericField fx:id="number" GridPane.rowIndex="3" GridPane.columnIndex="1" disable="true"/>
+			</GridPane>
+			<Button minWidth="150.0" mnemonicParsing="false" text="Add" onAction="#add"/>
+			<ListView fx:id="filters"/>
+			<padding>
+				<Insets top="5" bottom="5" left="5" right="5" />
+			</padding>
 		</VBox>
-
 	</center>
 </BorderPane>

@@ -14,11 +14,13 @@ public class VcfIndex implements Serializable {
 	private final List<Field> fields;
 	private final long lineCount;
 	private final GtBitsetArchive archive;
+	private final List<String> samples;
 
-	public VcfIndex(final List<Field> fields, final long lineCount, GtBitsetArchive archive) {
+	public VcfIndex(final List<Field> fields, final long lineCount, GtBitsetArchive archive, List<String> samples) {
 		this.fields = fields;
 		this.lineCount = lineCount;
 		this.archive = archive;
+		this.samples = samples;
 	}
 
 	public List<Field> getFields() {
@@ -33,4 +35,7 @@ public class VcfIndex implements Serializable {
 		return archive.getBitSet(contig, position);
 	}
 
+	public List<String> getSamples() {
+		return samples == null ? List.of() : samples;
+	}
 }

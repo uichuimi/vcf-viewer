@@ -1,235 +1,79 @@
 package org.uichuimi.variant.viewer.components;
 
-import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
-import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFHeader;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListView;
+import org.controlsfx.control.CheckComboBox;
+import org.uichuimi.variant.viewer.filter.SampleFilter;
 import org.uichuimi.variant.viewer.filter.VariantContextFilter;
 import org.uichuimi.variant.viewer.index.VcfIndex;
-import org.uichuimi.variant.viewer.utils.ActiveListener;
-import org.uichuimi.variant.viewer.utils.BitUtils;
-import org.uichuimi.variant.viewer.utils.Constants;
 import org.uichuimi.variant.viewer.utils.NoArgFunction;
 
-import java.util.Collection;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GenotypeFilters {
-	@FXML
-	private TextField search;
-	@FXML
-	private TableView<GtFilter> sampleTable;
-	@FXML
-	private TableColumn<GtFilter, String> sample;
-	@FXML
-	private TableColumn<GtFilter, Boolean> noCall;
-	@FXML
-	private TableColumn<GtFilter, Boolean> het;
-	@FXML
-	private TableColumn<GtFilter, Boolean> homVar;
-	@FXML
-	private TableColumn<GtFilter, Boolean> homRef;
 
-	private List<GtFilter> filters;
+	@FXML
+	private CheckComboBox<GenotypeType> genotypes;
+	@FXML
+	private ComboBox<Accessor> accessor;
+	@FXML
+	private CustomNumericField number;
+	@FXML
+	private CheckComboBox<String> samples;
+
+	@FXML
+	private ListView<SampleFilter> filters;
 
 	private NoArgFunction onFilter = NoArgFunction.NO_OP;
 
-	private final ActiveListener<Boolean> CHANGE_LISTENER = new ActiveListener<>((obs, prev, selected) -> changed());
-	private VcfIndex index;
-	private long[] mask;
-
 	public void setMetadata(VCFHeader header) {
-		filters = header.getGenotypeSamples().stream().map(GtFilter::new).collect(Collectors.toList());
-		CHANGE_LISTENER.setInactive();
-		filters.stream().flatMap(gtFilter -> Stream.of(
-			gtFilter.getGt(GenotypeType.NO_CALL),
-			gtFilter.getGt(GenotypeType.HOM_REF),
-			gtFilter.getGt(GenotypeType.HET),
-			gtFilter.getGt(GenotypeType.HOM_VAR)))
-			.forEach(booleanProperty -> booleanProperty.addListener(CHANGE_LISTENER));
-		CHANGE_LISTENER.setActive();
-		filterSampleTable();
-		mask = createMask();
-	}
-
-	@FXML
-	private void filterSampleTable() {
-		sampleTable.getItems().setAll(GtFilter.ALL);
-		final String term = this.search.getText().toLowerCase();
-		filters.stream()
-			.filter(gtFilter -> gtFilter.sample.toLowerCase().contains(term))
-			.forEach(sampleTable.getItems()::add);
+		samples.getItems().setAll(header.getGenotypeSamples());
+		filters.getItems().clear();
 	}
 
 	public void setMetadata(VcfIndex index) {
-		this.index = index;
-	}
-
-	public boolean filter(final VariantContext variant) {
-		if (index == null)
-			return filterByHeader(variant);
-		else
-			return filterByIndex(variant);
-	}
-
-	private boolean filterByHeader(final VariantContext variant) {
-		for (final GtFilter filter : filters) {
-			final Genotype genotype = variant.getGenotype(filter.getSample());
-			final GenotypeType type = genotype.getType();
-			if (!filter.getGt(type).getValue()) return false;
-		}
-		return true;
-	}
-
-	private boolean filterByIndex(final VariantContext variant) {
-		// Mask is inverted, that means if we look for a NO_CALL in a given sample, mask is 0111 for that person.
-		// We then intersect the bitset of that person with the mask. If, and only if, the intersection is false (0),
-		// we can assume that the filter passes.
-		// This method  (inverse mask and !intersection) allows to query 16 samples with a single bitwise operation,
-		// since one single person that do not match the mask will result in a > 0 intersection.
-		return !BitUtils.intersects(mask, index.getBitSet(variant.getContig(), variant.getStart()));
+		samples.getItems().setAll(index.getSamples());
 	}
 
 	public void setOnFilter(final NoArgFunction onFilter) {
 		this.onFilter = onFilter;
 	}
 
-	private long[] createMask() {
-		final int numberOfWords = (int) Math.ceil(filters.size() * 4. / 64);
-		final long[] mask = new long[numberOfWords];
-		for (int i = 0; i < filters.size(); i++) {
-			final GtFilter filter = filters.get(i);
-			for (int pos = 0; pos < Constants.validGenotypeTypes().size(); pos++) {
-				final int offset = i * Constants.validGenotypeTypes().size() + pos;
-				if (filter.getGt(Constants.validGenotypeTypes().get(pos)).getValue()) {
-					BitUtils.set(mask, offset);
-				} else {
-					BitUtils.clear(mask, offset);
-				}
-			}
-		}
-		BitUtils.flip(mask);
-		return mask;
-	}
-
 	@FXML
 	private void initialize() {
-		noCall.setCellValueFactory(feats -> feats.getValue().getGt(GenotypeType.NO_CALL));
-		homRef.setCellValueFactory(feats -> feats.getValue().getGt(GenotypeType.HOM_REF));
-		het.setCellValueFactory(feats -> feats.getValue().getGt(GenotypeType.HET));
-		homVar.setCellValueFactory(feats -> feats.getValue().getGt(GenotypeType.HOM_VAR));
+		accessor.getItems().setAll(Accessor.values());
+		accessor.valueProperty().addListener((obs, prev, accessor) -> number.setDisable(accessor != Accessor.ANY));
+		genotypes.getItems().setAll(GenotypeType.values());
 
-		noCall.setCellFactory(CheckBoxTableCell.forTableColumn(noCall));
-		homRef.setCellFactory(CheckBoxTableCell.forTableColumn(homRef));
-		het.setCellFactory(CheckBoxTableCell.forTableColumn(het));
-		homVar.setCellFactory(CheckBoxTableCell.forTableColumn(homVar));
+		samples.getCheckModel().clearChecks();
+		genotypes.getCheckModel().clearChecks();
+		accessor.setValue(Accessor.ALL);
+		number.setValue(null);
 
-		sample.setCellValueFactory(features -> new SimpleObjectProperty<>(features.getValue().getSample()));
+		filters.setCellFactory(param -> new FilterCell<>());
+		filters.setSelectionModel(new NoSelectionModel<>());
+		filters.getItems().addListener((ListChangeListener<SampleFilter>) observable -> onFilter.call());
 
-		sampleTable.setEditable(true);
-
-		bindSelectAll();
-	}
-
-	private void bindSelectAll() {
-		final List<Function<GtFilter, Property<Boolean>>> getters = List.of(
-			gtFilter -> gtFilter.getGt(GenotypeType.NO_CALL),
-			gtFilter -> gtFilter.getGt(GenotypeType.HOM_REF),
-			gtFilter -> gtFilter.getGt(GenotypeType.HET),
-			gtFilter -> gtFilter.getGt(GenotypeType.HOM_VAR));
-		for (final Function<GtFilter, Property<Boolean>> getter : getters) {
-			// Listen to changes in GtFilter.ALL and apply new value to all filters.
-			// After this, re-filter
-			getter.apply(GtFilter.ALL).addListener((obs, prev, selected) -> {
-				CHANGE_LISTENER.setInactive();
-				for (final GtFilter filter : filters) {
-					getter.apply(filter).setValue(selected);
-				}
-				CHANGE_LISTENER.setActive();
-				changed();
-			});
-		}
-	}
-
-	private void changed() {
-		onFilter.call();
-		mask = createMask();
 	}
 
 	public VariantContextFilter getFilter() {
-		if (index == null) {
-			return new UnmodifiableSimpleFilter(filters);
-		} else {
-			return new UnmodifiableIndexedFilter(mask, index);
-		}
-
+		final List<SampleFilter> filters = List.copyOf(this.filters.getItems());
+		return variant -> filters.stream().allMatch(f -> f.filter(variant));
 	}
 
-	private static class GtFilter {
-		static final GtFilter ALL = new GtFilter("_ALL_");
-		private final String sample;
-		private final EnumMap<GenotypeType, Property<Boolean>> gtMap = new EnumMap<>(GenotypeType.class);
-
-		public GtFilter(final String sample) {
-			this.sample = sample;
-		}
-
-		public String getSample() {
-			return sample;
-		}
-
-		public Property<Boolean> getGt(GenotypeType type) {
-			return gtMap.computeIfAbsent(type, t -> new SimpleBooleanProperty(true));
-		}
-
+	public void add() {
+		filters.getItems().add(new SampleFilter(
+			List.copyOf(samples.getCheckModel().getCheckedItems()),
+			List.copyOf(genotypes.getCheckModel().getCheckedItems()),
+			accessor.getValue(), number.intValue()));
+		samples.getCheckModel().clearChecks();
+		genotypes.getCheckModel().clearChecks();
+		accessor.setValue(Accessor.ALL);
+		number.setValue(null);
 	}
 
-
-	private static class UnmodifiableSimpleFilter implements VariantContextFilter {
-
-		private final Collection<GtFilter> filters;
-
-		public UnmodifiableSimpleFilter(final Collection<GtFilter> filters) {
-			this.filters = List.copyOf(filters);
-		}
-
-		@Override
-		public boolean filter(VariantContext variantContext) {
-			for (final GtFilter filter : filters) {
-				final Genotype genotype = variantContext.getGenotype(filter.getSample());
-				final GenotypeType type = genotype.getType();
-				if (!filter.getGt(type).getValue()) return false;
-			}
-			return true;
-		}
-	}
-
-	private static class UnmodifiableIndexedFilter implements VariantContextFilter {
-
-		private final long[] mask;
-		private final VcfIndex index;
-
-		public UnmodifiableIndexedFilter(final long[] mask, final VcfIndex index) {
-			this.mask = mask;
-			this.index = index;
-		}
-
-		@Override
-		public boolean filter(VariantContext variant) {
-			return !BitUtils.intersects(mask, index.getBitSet(variant.getContig(), variant.getStart()));
-		}
-	}
-
-	}
+}
