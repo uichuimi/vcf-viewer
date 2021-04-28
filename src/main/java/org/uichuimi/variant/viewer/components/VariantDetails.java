@@ -28,6 +28,7 @@ public class VariantDetails {
 	private GenotypesTable genotypesController;
 
 	@FXML
+	@SuppressWarnings("unused")
 	private Parent frequencies;
 	@FXML
 	private FrequenciesTable frequenciesController;

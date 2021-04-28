@@ -103,13 +103,19 @@ public class FrequenciesTable {
 					} else {
 						Collections.addAll(undefined, split);
 					}
+				} else if (split.length == 2) {
+					if (FREQUENCY_IDS.contains(split[0].toLowerCase(Locale.ROOT))) {
+						undefined.add(split[1]);
+					} else if (FREQUENCY_IDS.contains(split[1].toLowerCase(Locale.ROOT))) {
+						undefined.add(split[0]);
+					}
 				}
 			}
 		}
 		undefined.removeAll(sources);
 		for (String val : new ArrayList<>(undefined)) {
 			final String v = val.toLowerCase(Locale.ROOT);
-			if (STANDARD_POPULATIONS.contains(v) || FREQUENCY_IDS.contains(v)) {
+			if (FREQUENCY_IDS.contains(v)) {
 				undefined.remove(val);
 			}
 		}

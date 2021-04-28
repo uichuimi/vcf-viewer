@@ -20,7 +20,7 @@
 				<VBox styleClass="section-title">
 					<Label text="FREQUENCIES"/>
 				</VBox>
-				<fx:include fx:id="frequencies" source="frequencies-table.fxml"/>
+				<fx:include VBox.vgrow="ALWAYS" fx:id="frequencies" source="frequencies-table.fxml"/>
 			</VBox>
 			<VBox fx:id="genotypesPane" alignment="TOP_CENTER">
 				<VBox styleClass="section-title">
