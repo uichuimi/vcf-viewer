@@ -9,15 +9,16 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import org.apache.commons.lang3.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class FrequenciesTable {
 
 	private static final List<String> SEPARATORS = List.of("_", "-");
 	private static final String NONE = "None";
+	private static final String AF = "af";
+	private static final String AC = "ac";
+	private static final String AN = "an";
+	private static final List<String> FREQUENCY_IDS = List.of(AC, AN, AF);
 
 	@FXML
 	private TableColumn<Frequency, String> source;
@@ -32,10 +33,10 @@ public class FrequenciesTable {
 	@FXML
 	private TableView<Frequency> frequencies;
 
-	private List<FrequencyFactory> factories;
+	private Collection<FrequencyFactory> factories;
 
 	public void setHeader(VCFHeader header) {
-		factories = new ArrayList<>();
+		factories = new LinkedHashSet<>();
 		// We need to identify any combination of the following pattern:
 		// - the string AF, AN or AC (upper or lower)
 		// - a separator (usually _ or -)
@@ -55,7 +56,7 @@ public class FrequenciesTable {
 		final List<String> candidates = new ArrayList<>();
 		for (VCFInfoHeaderLine line : header.getInfoHeaderLines()) {
 			final String id = line.getID().toLowerCase(Locale.ROOT);
-			if (id.contains("af") || id.contains("an") || id.contains("ac")) {
+			if (id.contains(AF) || id.contains(AN) || id.contains(AC)) {
 				candidates.add(line.getID());
 			}
 		}
@@ -86,39 +87,65 @@ public class FrequenciesTable {
 	}
 
 	private Collection<FrequencyFactory> createFactories(String separator, List<String> candidates) {
+		candidates = new ArrayList<>(candidates);
 		final List<FrequencyFactory> factories = new ArrayList<>();
 		while (!candidates.isEmpty()) {
 			final String candidate = candidates.get(0);
 			final String[] split = candidate.split(separator);
+			String population = null;
+			String source = null;
+			String[] afFields = null;
+			String[] anFields = null;
+			String[] acFields = null;
+
 			if (split.length == 1) {
-				// When the field id has only one value, it must be one of ac, an or af.
-				final String ac;
-				final String an;
-				final String af;
-				if (candidate.equalsIgnoreCase("af")) {
-					ac = find(candidates, buildFrequencyString(separator, "ac"));
-					an = find(candidates, buildFrequencyString(separator, "an"));
-					af = candidate;
-				} else if (candidate.equalsIgnoreCase("ac")) {
-					ac = candidate;
-					an = find(candidates, buildFrequencyString(separator, "an"));
-					af = find(candidates, buildFrequencyString(separator, "af"));
-				} else if (candidate.equalsIgnoreCase("an")) {
-					ac = find(candidates, buildFrequencyString(separator, "ac"));
-					an = candidate;
-					af = find(candidates, buildFrequencyString(separator, "af"));
-				} else {
-					candidates.remove(candidate);
-					continue;
-				}
-				factories.add(new FrequencyFactory(null, null, ac, an, af));
-				candidates.remove(ac);
-				candidates.remove(an);
-				candidates.remove(af);
+				acFields = new String[]{AC};
+				afFields = new String[]{AF};
+				anFields = new String[]{AN};
 			} else if (split.length == 2) {
-
+				if (FREQUENCY_IDS.contains(split[0].toLowerCase(Locale.ROOT))) {
+					population = split[1];
+					afFields = new String[]{AF, population};
+					acFields = new String[]{AC, population};
+					anFields = new String[]{AN, population};
+				} else if (FREQUENCY_IDS.contains(split[1].toLowerCase(Locale.ROOT))) {
+					population = split[0];
+					afFields = new String[]{population, AF};
+					acFields = new String[]{population, AC};
+					anFields = new String[]{population, AN};
+				}
 			} else if (split.length == 3) {
+				if (FREQUENCY_IDS.contains(split[0].toLowerCase(Locale.ROOT))) {
+					source = split[1];
+					population = split[2];
+					afFields = new String[]{AF, source, population};
+					acFields = new String[]{AC, source, population};
+					anFields = new String[]{AN, source, population};
+				} else if (FREQUENCY_IDS.contains(split[1].toLowerCase(Locale.ROOT))) {
+					source = split[0];
+					population = split[2];
+					afFields = new String[]{source, AF, population};
+					acFields = new String[]{source, AC, population};
+					anFields = new String[]{source, AN, population};
+				} else if (FREQUENCY_IDS.contains(split[2].toLowerCase(Locale.ROOT))) {
+					source = split[0];
+					population = split[1];
+					afFields = new String[]{source, population, AF};
+					acFields = new String[]{source, population, AC};
+					anFields = new String[]{source, population, AN};
+				}
 
+			}
+			if (ObjectUtils.allNotNull(acFields, anFields, afFields)) {
+				final String ac = find(candidates, buildFrequencyString(separator, acFields));
+				final String an = find(candidates, buildFrequencyString(separator, anFields));
+				final String af = find(candidates, buildFrequencyString(separator, afFields));
+				if (ObjectUtils.anyNotNull(ac, af, an)) {
+					factories.add(new FrequencyFactory(source, population, ac, an, af));
+					candidates.remove(ac);
+					candidates.remove(an);
+					candidates.remove(af);
+				}
 			}
 			candidates.remove(candidate);
 		}
@@ -175,13 +202,13 @@ public class FrequenciesTable {
 	 */
 	private static class FrequencyFactory {
 
-		private final String population;
 		private final String source;
+		private final String population;
 		private final String ac;
 		private final String an;
 		private final String af;
 
-		private FrequencyFactory(String population, String source, String ac, String an, String af) {
+		private FrequencyFactory(String source, String population, String ac, String an, String af) {
 			this.population = population == null ? NONE : population;
 			this.source = source == null ? NONE : source;
 			this.ac = ac;
@@ -209,6 +236,19 @@ public class FrequenciesTable {
 			final List<Double> list = variant.getAttributeAsDoubleList(id, -1);
 			if (list.isEmpty()) return null;
 			return list.get(0);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			FrequencyFactory that = (FrequencyFactory) o;
+			return Objects.equals(source, that.source) && Objects.equals(population, that.population) && Objects.equals(ac, that.ac) && Objects.equals(an, that.an) && Objects.equals(af, that.af);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(source, population, ac, an, af);
 		}
 	}
 }
