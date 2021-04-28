@@ -14,11 +14,12 @@ import java.util.*;
 public class FrequenciesTable {
 
 	private static final List<String> SEPARATORS = List.of("_", "-");
-	private static final String NONE = "None";
+	private static final String NONE = "-";
 	private static final String AF = "af";
 	private static final String AC = "ac";
 	private static final String AN = "an";
 	private static final List<String> FREQUENCY_IDS = List.of(AC, AN, AF);
+	private static final Collection<String> STANDARD_POPULATIONS = Set.of("afr", "ami", "amr", "asj", "eas", "fin", "mid", "nfe", "oth");
 
 	@FXML
 	private TableColumn<Frequency, String> source;
@@ -60,10 +61,62 @@ public class FrequenciesTable {
 				candidates.add(line.getID());
 			}
 		}
-
+		final SourceAndPopulation sourceAndPopulation = determineSourceAndPopulation(candidates);
 		for (String separator : SEPARATORS) {
-			factories.addAll(createFactories(separator, candidates));
+			factories.addAll(createFactories(separator, candidates, sourceAndPopulation));
 		}
+	}
+
+	/**
+	 * Finds which strings represent a population and which a source. Since naming has no convention, it is not possible
+	 * to know which item in a field id is source neither population.
+	 */
+	private SourceAndPopulation determineSourceAndPopulation(List<String> candidates) {
+		// We need to find 3 elements IDs
+		// If we find one and after splitting, we get one string being AC, AF or AN and another contained in
+		// STANDARD_POPULATIONS, then the third one is a source.
+		final Collection<String> sources = new TreeSet<>();
+		final Collection<String> populations = new TreeSet<>();
+		final Collection<String> undefined = new TreeSet<>();
+		for (String separator : SEPARATORS) {
+			for (String candidate : candidates) {
+				final String[] split = candidate.split(separator);
+				if (split.length == 3) {
+					// Which positions are using the ID and the population?
+					final Set<Integer> index = new TreeSet<>();
+					for (int i = 0; i < split.length; i++) {
+						if (FREQUENCY_IDS.contains(split[i].toLowerCase(Locale.ROOT))) {
+							index.add(i);
+						} else if (STANDARD_POPULATIONS.contains(split[i].toLowerCase(Locale.ROOT))) {
+							index.add(i);
+							populations.add(split[i]);
+						}
+					}
+					// Did we find positions for these 2 elements?
+					if (index.size() == 2) {
+						// Let's use the unused position for the source
+						for (int i = 0; i < 3; i++) {
+							if (!index.contains(i)) {
+								sources.add(split[i]);
+							}
+						}
+					} else {
+						Collections.addAll(undefined, split);
+					}
+				}
+			}
+		}
+		undefined.removeAll(sources);
+		for (String val : new ArrayList<>(undefined)) {
+			final String v = val.toLowerCase(Locale.ROOT);
+			if (STANDARD_POPULATIONS.contains(v) || FREQUENCY_IDS.contains(v)) {
+				undefined.remove(val);
+			}
+		}
+		populations.addAll(undefined);
+		System.out.println(sources);
+		System.out.println(populations);
+		return new SourceAndPopulation(sources, populations);
 	}
 
 	public void select(VariantContext variant) {
@@ -86,8 +139,9 @@ public class FrequenciesTable {
 		return fields;
 	}
 
-	private Collection<FrequencyFactory> createFactories(String separator, List<String> candidates) {
+	private Collection<FrequencyFactory> createFactories(String separator, List<String> candidates, SourceAndPopulation sourceAndPopulation) {
 		candidates = new ArrayList<>(candidates);
+		final Collection<String> populations = sourceAndPopulation.populations;
 		final List<FrequencyFactory> factories = new ArrayList<>();
 		while (!candidates.isEmpty()) {
 			final String candidate = candidates.get(0);
@@ -104,37 +158,59 @@ public class FrequenciesTable {
 				anFields = new String[]{AN};
 			} else if (split.length == 2) {
 				if (FREQUENCY_IDS.contains(split[0].toLowerCase(Locale.ROOT))) {
-					population = split[1];
-					afFields = new String[]{AF, population};
-					acFields = new String[]{AC, population};
-					anFields = new String[]{AN, population};
+					if (populations.contains(split[1])) {
+						population = split[1];
+					} else {
+						source = split[1];
+					}
+					afFields = new String[]{AF, split[1]};
+					acFields = new String[]{AC, split[1]};
+					anFields = new String[]{AN, split[1]};
 				} else if (FREQUENCY_IDS.contains(split[1].toLowerCase(Locale.ROOT))) {
-					population = split[0];
-					afFields = new String[]{population, AF};
-					acFields = new String[]{population, AC};
-					anFields = new String[]{population, AN};
+					if (populations.contains(split[0])) {
+						population = split[0];
+					} else {
+						source = split[0];
+					}
+					afFields = new String[]{split[0], AF};
+					acFields = new String[]{split[0], AC};
+					anFields = new String[]{split[0], AN};
 				}
 			} else if (split.length == 3) {
 				if (FREQUENCY_IDS.contains(split[0].toLowerCase(Locale.ROOT))) {
-					source = split[1];
-					population = split[2];
-					afFields = new String[]{AF, source, population};
-					acFields = new String[]{AC, source, population};
-					anFields = new String[]{AN, source, population};
+					if (populations.contains(split[1])) {
+						population = split[1];
+						source = split[2];
+					} else {
+						source = split[1];
+						population = split[2];
+					}
+					afFields = new String[]{AF, split[1], split[2]};
+					acFields = new String[]{AC, split[1], split[2]};
+					anFields = new String[]{AN, split[1], split[2]};
 				} else if (FREQUENCY_IDS.contains(split[1].toLowerCase(Locale.ROOT))) {
-					source = split[0];
-					population = split[2];
-					afFields = new String[]{source, AF, population};
-					acFields = new String[]{source, AC, population};
-					anFields = new String[]{source, AN, population};
+					if (populations.contains(split[0])) {
+						population = split[0];
+						source = split[2];
+					} else {
+						source = split[0];
+						population = split[2];
+					}
+					afFields = new String[]{split[0], AF, split[2]};
+					acFields = new String[]{split[0], AC, split[2]};
+					anFields = new String[]{split[0], AN, split[2]};
 				} else if (FREQUENCY_IDS.contains(split[2].toLowerCase(Locale.ROOT))) {
-					source = split[0];
-					population = split[1];
-					afFields = new String[]{source, population, AF};
-					acFields = new String[]{source, population, AC};
-					anFields = new String[]{source, population, AN};
+					if (populations.contains(split[0])) {
+						population = split[0];
+						source = split[1];
+					} else {
+						source = split[0];
+						population = split[1];
+					}
+					afFields = new String[]{split[0], split[1], AF};
+					acFields = new String[]{split[0], split[1], AC};
+					anFields = new String[]{split[0], split[1], AN};
 				}
-
 			}
 			if (ObjectUtils.allNotNull(acFields, anFields, afFields)) {
 				final String ac = find(candidates, buildFrequencyString(separator, acFields));
@@ -179,15 +255,15 @@ public class FrequenciesTable {
 	 * {@link Frequency}s are meant to be used as rows in a frequency table. They are immutable.
 	 */
 	private static class Frequency {
-		final String population;
 		final String source;
+		final String population;
 		final Integer ac;
 		final Integer an;
 		final Double af;
 
-		private Frequency(String population, String source, Integer ac, Integer an, Double af) {
-			this.population = population;
+		private Frequency(String source, String population, Integer ac, Integer an, Double af) {
 			this.source = source;
+			this.population = population;
 			this.ac = ac;
 			this.an = an;
 			this.af = af;
@@ -221,7 +297,7 @@ public class FrequenciesTable {
 			final Integer number = getOneInt(an, variant);
 			final Double freq = getOneDouble(af, variant);
 			if (ObjectUtils.anyNotNull(count, number, freq)) {
-				return new Frequency(population, source, count, number, freq);
+				return new Frequency(source, population, count, number, freq);
 			}
 			return null;
 		}
@@ -243,12 +319,26 @@ public class FrequenciesTable {
 			if (this == o) return true;
 			if (o == null || getClass() != o.getClass()) return false;
 			FrequencyFactory that = (FrequencyFactory) o;
-			return Objects.equals(source, that.source) && Objects.equals(population, that.population) && Objects.equals(ac, that.ac) && Objects.equals(an, that.an) && Objects.equals(af, that.af);
+			return Objects.equals(source, that.source) &&
+				Objects.equals(population, that.population) &&
+				Objects.equals(ac, that.ac) &&
+				Objects.equals(an, that.an) &&
+				Objects.equals(af, that.af);
 		}
 
 		@Override
 		public int hashCode() {
 			return Objects.hash(source, population, ac, an, af);
+		}
+	}
+
+	private static class SourceAndPopulation {
+		private final Collection<String> sources;
+		private final Collection<String> populations;
+
+		private SourceAndPopulation(Collection<String> sources, Collection<String> populations) {
+			this.sources = sources;
+			this.populations = populations;
 		}
 	}
 }
