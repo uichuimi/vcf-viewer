@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane xmlns="https://javafx.com/javafx"
+			xmlns:fx="http://javafx.com/fxml"
+			fx:controller="org.uichuimi.variant.viewer.components.FrequenciesTable">
+	<center>
+
+		<TableView fx:id="frequencies">
+			<columns>
+				<TableColumn text="Source" fx:id="source"/>
+				<TableColumn text="Population" fx:id="population"/>
+				<TableColumn text="Count" fx:id="count"/>
+				<TableColumn text="Number" fx:id="number"/>
+				<TableColumn text="Frequency" fx:id="frequency"/>
+
+			</columns>
+		</TableView>
+	</center>
+
+</BorderPane>

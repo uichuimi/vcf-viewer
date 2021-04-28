@@ -110,6 +110,7 @@ public class VariantsTable {
 			final VCFHeader header = reader.getHeader();
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
 			variantFiltersController.setMetadata(header);
+			variantDetailsController.setHeader(header);
 		} catch (Exception e) {
 			e.printStackTrace();
 			MainView.error(e);

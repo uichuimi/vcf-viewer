@@ -16,6 +16,12 @@
 				</VBox>
 				<fx:include fx:id="properties" source="properties-table.fxml"/>
 			</VBox>
+			<VBox fx:id="frequenciesPane" alignment="TOP_CENTER">
+				<VBox styleClass="section-title">
+					<Label text="FREQUENCIES"/>
+				</VBox>
+				<fx:include fx:id="frequencies" source="frequencies-table.fxml"/>
+			</VBox>
 			<VBox fx:id="genotypesPane" alignment="TOP_CENTER">
 				<VBox styleClass="section-title">
 					<Label text="GENOTYPES"/>

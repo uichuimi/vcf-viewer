@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+import java.util.List;
 import java.util.Map;
 
 public class PropertiesTable {
@@ -16,12 +17,15 @@ public class PropertiesTable {
 	private TableColumn<Map.Entry<String, Object>, String> info;
 	@FXML
 	private TableColumn<Map.Entry<String, Object>, String> value;
+	private List<String> ignored;
 
 	public void select(final VariantContext variant) {
 		infoTable.getItems().clear();
 		if (variant == null) return;
 		for (final Map.Entry<String, Object> entry : variant.getCommonInfo().getAttributes().entrySet()) {
-			infoTable.getItems().add(entry);
+			if (!ignored.contains(entry.getKey())) {
+				infoTable.getItems().add(entry);
+			}
 		}
 	}
 
@@ -34,4 +38,7 @@ public class PropertiesTable {
 		infoTable.setEditable(true);
 	}
 
+	public void setIgnored(List<String> ignored) {
+		this.ignored = ignored;
+	}
 }

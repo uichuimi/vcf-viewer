@@ -1,8 +1,10 @@
 package org.uichuimi.variant.viewer.components;
 
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFHeader;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
@@ -25,6 +27,10 @@ public class VariantDetails {
 	@FXML
 	private GenotypesTable genotypesController;
 
+	@FXML
+	private Parent frequencies;
+	@FXML
+	private FrequenciesTable frequenciesController;
 
 	@FXML
 	private BorderPane root;
@@ -32,6 +38,8 @@ public class VariantDetails {
 	private FlowPane showing;
 	@FXML
 	private VBox propertiesPane;
+	@FXML
+	private VBox frequenciesPane;
 	@FXML
 	private VBox genotypesPane;
 	@FXML
@@ -43,6 +51,7 @@ public class VariantDetails {
 	private void initialize() {
 		panes = List.of(
 			new SelectablePane("PROPERTIES", propertiesPane),
+			new SelectablePane("FREQUENCIES", frequenciesPane),
 			new SelectablePane("GENOTYPES", genotypesPane));
 		for (SelectablePane selectablePane : panes) {
 			final ToggleButton button = new ToggleButton(selectablePane.getName());
@@ -74,5 +83,12 @@ public class VariantDetails {
 	public void set(VariantContext variant) {
 		propertiesController.select(variant);
 		genotypesController.select(variant);
+		frequenciesController.select(variant);
+	}
+
+	public void setHeader(VCFHeader header) {
+		frequenciesController.setHeader(header);
+		final List<String> fields = frequenciesController.frequencyFields();
+		propertiesController.setIgnored(fields);
 	}
 }
