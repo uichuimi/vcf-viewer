@@ -11,6 +11,10 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.*;
 
+/**
+ * Shows a table indicating for each population and source, its allele count (AC), allele number (AN) and allele
+ * frequency (AF).
+ */
 public class FrequenciesTable {
 
 	private static final List<String> SEPARATORS = List.of("_", "-");
@@ -37,92 +41,7 @@ public class FrequenciesTable {
 	private Collection<FrequencyFactory> factories;
 
 	public void setHeader(VCFHeader header) {
-		factories = new LinkedHashSet<>();
-		// We need to identify any combination of the following pattern:
-		// - the string AF, AN or AC (upper or lower)
-		// - a separator (usually _ or -)
-		// - (optional) a string representing a population
-		// - (optional) a string representing a source
-		// For example:
-		// GG_AF_afr
-		// GG_afr_af
-		// AF_GG_afr
-		// AF_afr_GG
-		// afr_AF_GG
-		// afr_GG_AF
-		// If only two values in the string, then it is assumed to only be a population
-		// AF_afr
-		// afr_AF
-		// If no separator exists, only AF,AC and AN strings are considered
-		final List<String> candidates = new ArrayList<>();
-		for (VCFInfoHeaderLine line : header.getInfoHeaderLines()) {
-			final String id = line.getID().toLowerCase(Locale.ROOT);
-			if (id.contains(AF) || id.contains(AN) || id.contains(AC)) {
-				candidates.add(line.getID());
-			}
-		}
-		final SourceAndPopulation sourceAndPopulation = determineSourceAndPopulation(candidates);
-		for (String separator : SEPARATORS) {
-			factories.addAll(createFactories(separator, candidates, sourceAndPopulation));
-		}
-	}
-
-	/**
-	 * Finds which strings represent a population and which a source. Since naming has no convention, it is not possible
-	 * to know which item in a field id is source neither population.
-	 */
-	private SourceAndPopulation determineSourceAndPopulation(List<String> candidates) {
-		// We need to find 3 elements IDs
-		// If we find one and after splitting, we get one string being AC, AF or AN and another contained in
-		// STANDARD_POPULATIONS, then the third one is a source.
-		final Collection<String> sources = new TreeSet<>();
-		final Collection<String> populations = new TreeSet<>();
-		final Collection<String> undefined = new TreeSet<>();
-		for (String separator : SEPARATORS) {
-			for (String candidate : candidates) {
-				final String[] split = candidate.split(separator);
-				if (split.length == 3) {
-					// Which positions are using the ID and the population?
-					final Set<Integer> index = new TreeSet<>();
-					for (int i = 0; i < split.length; i++) {
-						if (FREQUENCY_IDS.contains(split[i].toLowerCase(Locale.ROOT))) {
-							index.add(i);
-						} else if (STANDARD_POPULATIONS.contains(split[i].toLowerCase(Locale.ROOT))) {
-							index.add(i);
-							populations.add(split[i]);
-						}
-					}
-					// Did we find positions for these 2 elements?
-					if (index.size() == 2) {
-						// Let's use the unused position for the source
-						for (int i = 0; i < 3; i++) {
-							if (!index.contains(i)) {
-								sources.add(split[i]);
-							}
-						}
-					} else {
-						Collections.addAll(undefined, split);
-					}
-				} else if (split.length == 2) {
-					if (FREQUENCY_IDS.contains(split[0].toLowerCase(Locale.ROOT))) {
-						undefined.add(split[1]);
-					} else if (FREQUENCY_IDS.contains(split[1].toLowerCase(Locale.ROOT))) {
-						undefined.add(split[0]);
-					}
-				}
-			}
-		}
-		undefined.removeAll(sources);
-		for (String val : new ArrayList<>(undefined)) {
-			final String v = val.toLowerCase(Locale.ROOT);
-			if (FREQUENCY_IDS.contains(v)) {
-				undefined.remove(val);
-			}
-		}
-		populations.addAll(undefined);
-		System.out.println(sources);
-		System.out.println(populations);
-		return new SourceAndPopulation(sources, populations);
+		createFactories(header);
 	}
 
 	public void select(VariantContext variant) {
@@ -145,9 +64,108 @@ public class FrequenciesTable {
 		return fields;
 	}
 
-	private Collection<FrequencyFactory> createFactories(String separator, List<String> candidates, SourceAndPopulation sourceAndPopulation) {
+	private void createFactories(VCFHeader header) {
+		factories = new LinkedHashSet<>();
+		// Get a list of field ids containing AC, AF or AN
+		final List<String> candidates = getCandidates(header);
+		// Try to split every candidate by _ or -, subtract the AC, AF or AN string, and guess which of the others
+		// refer to a population or a source
+		final Collection<String> populations = determinePopulations(candidates);
+		// Again, split each candidate by _ or - and create a FrequencyFactory for each source and population
+		// finding the trio [src,pop,ac], [src,pop,an], [src,pop,af]
+		for (String separator : SEPARATORS) {
+			factories.addAll(createFactories(separator, candidates, populations));
+		}
+	}
+
+	/**
+	 * Finds which strings represent a population and which a source. Since naming has no convention, it is not possible
+	 * to know which item in a field id is source neither population.
+	 */
+	private Collection<String> determinePopulations(List<String> candidates) {
+		// We need to find 3 elements IDs, one of the elements must be AC, AF or AN.
+		// If one of the others is a standard population, the other is a source.
+		// All strings not being a source are considered populations
+		final Collection<String> sources = new TreeSet<>();
+		final Collection<String> populations = new TreeSet<>();
+		final Collection<String> undefined = new TreeSet<>();
+		for (String separator : SEPARATORS) {
+			for (String candidate : candidates) {
+				final String[] split = candidate.split(separator);
+				if (split.length == 3) {
+					// Which positions are using the AC/AF/AN and the population?
+					final Set<Integer> index = new TreeSet<>();
+					for (int i = 0; i < split.length; i++) {
+						final String val = split[i].toLowerCase(Locale.ROOT);
+						if (FREQUENCY_IDS.contains(val)) {
+							index.add(i);
+						} else if (STANDARD_POPULATIONS.contains(val)) {
+							index.add(i);
+							populations.add(split[i]);
+						}
+					}
+					// Did we find positions for these 2 elements?
+					if (index.size() == 2) {
+						// Let's use the unused position for the source
+						for (int i = 0; i < 3; i++) {
+							if (!index.contains(i)) {
+								sources.add(split[i]);
+							}
+						}
+					} else {
+						// This is a 3-value split with no known population
+						Collections.addAll(undefined, split);
+					}
+				} else if (split.length == 2) {
+					if (FREQUENCY_IDS.contains(split[0].toLowerCase(Locale.ROOT))) {
+						undefined.add(split[1]);
+					} else if (FREQUENCY_IDS.contains(split[1].toLowerCase(Locale.ROOT))) {
+						undefined.add(split[0]);
+					}
+				}
+			}
+		}
+		undefined.removeAll(sources);
+		for (String val : new ArrayList<>(undefined)) {
+			final String v = val.toLowerCase(Locale.ROOT);
+			if (FREQUENCY_IDS.contains(v)) {
+				undefined.remove(val);
+			}
+		}
+		populations.addAll(undefined);
+		return populations;
+	}
+
+	private List<String> getCandidates(VCFHeader header) {
+		final List<String> candidates = new ArrayList<>();
+		for (VCFInfoHeaderLine line : header.getInfoHeaderLines()) {
+			final String id = line.getID().toLowerCase(Locale.ROOT);
+			if (id.contains(AF) || id.contains(AN) || id.contains(AC)) {
+				candidates.add(line.getID());
+			}
+		}
+		return candidates;
+	}
+
+	private Collection<FrequencyFactory> createFactories(String separator, List<String> candidates, Collection<String> populations) {
+		// We need to identify any combination of the following pattern:
+		// - the string AF, AN or AC (upper or lower)
+		// - a separator (usually _ or -)
+		// - (optional) a string representing a population
+		// - (optional) a string representing a source
+		// For example:
+		// GG_AF_afr
+		// GG_afr_af
+		// AF_GG_afr
+		// AF_afr_GG
+		// afr_AF_GG
+		// afr_GG_AF
+		// If only two values in the string, only two combinations available
+		// AF_afr
+		// afr_AF
+		// If no separator exists, only AF,AC and AN strings are considered
+
 		candidates = new ArrayList<>(candidates);
-		final Collection<String> populations = sourceAndPopulation.populations;
 		final List<FrequencyFactory> factories = new ArrayList<>();
 		while (!candidates.isEmpty()) {
 			final String candidate = candidates.get(0);
@@ -159,10 +177,12 @@ public class FrequenciesTable {
 			String[] acFields = null;
 
 			if (split.length == 1) {
+				// Only 1 value, then it must be AC|AN|AF
 				acFields = new String[]{AC};
 				afFields = new String[]{AF};
 				anFields = new String[]{AN};
 			} else if (split.length == 2) {
+				// 2 values, one is AC|AN|AF, the other is a population or source
 				if (FREQUENCY_IDS.contains(split[0].toLowerCase(Locale.ROOT))) {
 					if (populations.contains(split[1])) {
 						population = split[1];
@@ -183,6 +203,7 @@ public class FrequenciesTable {
 					anFields = new String[]{split[0], AN};
 				}
 			} else if (split.length == 3) {
+				// 3 values, one is AC|AN|AF, the other is a population or source
 				if (FREQUENCY_IDS.contains(split[0].toLowerCase(Locale.ROOT))) {
 					if (populations.contains(split[1])) {
 						population = split[1];
@@ -218,6 +239,7 @@ public class FrequenciesTable {
 					anFields = new String[]{split[0], split[1], AN};
 				}
 			}
+			// Et voilà, we have all the ingredients: src, pop and ac|an|af strings
 			if (ObjectUtils.allNotNull(acFields, anFields, afFields)) {
 				final String ac = find(candidates, buildFrequencyString(separator, acFields));
 				final String an = find(candidates, buildFrequencyString(separator, anFields));
@@ -338,13 +360,4 @@ public class FrequenciesTable {
 		}
 	}
 
-	private static class SourceAndPopulation {
-		private final Collection<String> sources;
-		private final Collection<String> populations;
-
-		private SourceAndPopulation(Collection<String> sources, Collection<String> populations) {
-			this.sources = sources;
-			this.populations = populations;
-		}
-	}
 }
