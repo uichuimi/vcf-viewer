@@ -11,7 +11,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import org.uichuimi.variant.viewer.filter.Filter;
 import org.uichuimi.variant.viewer.filter.VariantContextFilter;
@@ -31,6 +30,9 @@ import java.util.stream.Collectors;
 public class VariantsTable {
 
 	@FXML
+	@SuppressWarnings({"unused"})
+	private VariantDetails variantDetailsController;
+	@FXML
 	private VBox propertyFiltersPane;
 	@FXML
 	private VBox genotypeFiltersPane;
@@ -43,35 +45,15 @@ public class VariantsTable {
 	@FXML
 	private SplitPane center;
 	@FXML
-	private VBox propertiesPane;
-	@FXML
-	private VBox genotypesPane;
-	@FXML
-	private SplitPane additionalDataPane;
-	@FXML
-	private ToggleButton showGenotypes;
-	@FXML
-	private ToggleButton showProperties;
-	@FXML
 	private Label totalVariants;
 	@FXML
 	private Label filteredVariants;
 	@FXML
-	private BorderPane propertyFilters;
-	@FXML
+	@SuppressWarnings({"unused"})
 	private PropertyFilters propertyFiltersController;
 	@FXML
-	private BorderPane genotypeFilters;
-	@FXML
+	@SuppressWarnings({"unused"})
 	private GenotypeFilters genotypeFiltersController;
-	@FXML
-	private BorderPane properties;
-	@FXML
-	private PropertiesTable propertiesController;
-	@FXML
-	private BorderPane genotypes;
-	@FXML
-	private GenotypesTable genotypesController;
 
 	@FXML
 	private TableView<VariantContext> variantsTable;
@@ -193,43 +175,11 @@ public class VariantsTable {
 		variantsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		propertyFiltersController.filterList().addListener((ListChangeListener<Filter>) change -> Platform.runLater(this::reload));
 		genotypeFiltersController.setOnFilter(() -> Platform.runLater(this::reload));
-		showProperties.selectedProperty().addListener((ons, prev, selected) -> showProperties(selected));
-		showGenotypes.selectedProperty().addListener((ons, prev, selected) -> showGenotypes(selected));
 		showPropertyFilters.selectedProperty().addListener((ons, prev, selected) -> showPropertyFilters(selected));
 		showGenotypeFilters.selectedProperty().addListener((ons, prev, selected) -> showGenotypeFilters(selected));
+
 	}
 
-	private void showProperties(Boolean selected) {
-		if (selected) {
-			if (!additionalDataPane.getItems().contains(propertiesPane)) {
-				additionalDataPane.getItems().add(0, propertiesPane);
-			}
-		} else {
-			additionalDataPane.getItems().remove(propertiesPane);
-		}
-		hideOrShowAdditionalPane();
-	}
-
-	private void showGenotypes(Boolean selected) {
-		if (selected) {
-			if (!additionalDataPane.getItems().contains(genotypesPane)) {
-				additionalDataPane.getItems().add(genotypesPane);
-			}
-		} else {
-			additionalDataPane.getItems().remove(genotypesPane);
-		}
-		hideOrShowAdditionalPane();
-	}
-
-	private void hideOrShowAdditionalPane() {
-		if (additionalDataPane.getItems().isEmpty()) {
-			center.getItems().remove(additionalDataPane);
-		} else {
-			if (!center.getItems().contains(additionalDataPane)) {
-				center.getItems().add(additionalDataPane);
-			}
-		}
-	}
 
 	private void showPropertyFilters(Boolean selected) {
 		if (selected) {
@@ -264,8 +214,7 @@ public class VariantsTable {
 	}
 
 	private void select(final VariantContext variant) {
-		propertiesController.select(variant);
-		genotypesController.select(variant);
+		variantDetailsController.set(variant);
 	}
 
 	public void save(File file) {

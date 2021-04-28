@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="https://javafx.com/javafx"
+			xmlns:fx="http://javafx.com/fxml"
+			fx:controller="org.uichuimi.variant.viewer.components.VariantDetails"
+			fx:id="root">
+
+	<center>
+		<SplitPane fx:id="content" orientation="VERTICAL">
+			<VBox fx:id="propertiesPane" alignment="TOP_CENTER">
+				<VBox styleClass="section-title">
+					<Label text="PROPERTIES"/>
+				</VBox>
+				<fx:include fx:id="properties" source="properties-table.fxml"/>
+			</VBox>
+			<VBox fx:id="genotypesPane" alignment="TOP_CENTER">
+				<VBox styleClass="section-title">
+					<Label text="GENOTYPES"/>
+				</VBox>
+				<fx:include fx:id="genotypes" source="genotypes-table.fxml"/>
+			</VBox>
+		</SplitPane>
+	</center>
+	<right>
+		<FlowPane fx:id="showing" vgap="5" orientation="VERTICAL"/>
+	</right>
+</BorderPane>
