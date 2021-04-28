@@ -36,7 +36,6 @@ public class GenotypeFilters {
 	}
 
 	public void setMetadata(VcfIndex index) {
-		samples.getItems().setAll(index.getSamples());
 	}
 
 	public void setOnFilter(final NoArgFunction onFilter) {

@@ -67,7 +67,10 @@ public class VariantContextPipe extends Task<ObservableList<VariantContext>> {
 				}
 				lines.set(lines.get() + 1);
 				if (lines.get() % 1000 == 0) {
-					updateMessage("%s:%,d".formatted(variant.getContig(), variant.getStart()));
+					final String message = output == null
+						? "%s:%,d".formatted(variant.getContig(), variant.getStart())
+						: "Saving to %s (%s:%,d)".formatted(output.getName(), variant.getContig(), variant.getStart());
+					updateMessage(message);
 					if (total != null) {
 						updateProgress(lines.get(), total);
 					}
