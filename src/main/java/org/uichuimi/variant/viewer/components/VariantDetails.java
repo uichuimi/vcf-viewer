@@ -14,27 +14,28 @@ import java.util.List;
 public class VariantDetails {
 
 	@FXML
-	private BorderPane root;
+	@SuppressWarnings("unused")
+	private BorderPane properties;
+	@FXML
+	private PropertiesTable propertiesController;
 
 	@FXML
-	private FlowPane showing;
+	@SuppressWarnings("unused")
+	private BorderPane genotypes;
+	@FXML
+	private GenotypesTable genotypesController;
 
+
+	@FXML
+	private BorderPane root;
+	@FXML
+	private FlowPane showing;
 	@FXML
 	private VBox propertiesPane;
 	@FXML
 	private VBox genotypesPane;
-
 	@FXML
 	private SplitPane content;
-
-	@FXML
-	private BorderPane properties;
-	@FXML
-	private PropertiesTable propertiesController;
-	@FXML
-	private BorderPane genotypes;
-	@FXML
-	private GenotypesTable genotypesController;
 
 	private List<SelectablePane> panes;
 

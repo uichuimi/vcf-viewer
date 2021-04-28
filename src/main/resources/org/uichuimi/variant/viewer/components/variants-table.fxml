@@ -2,28 +2,14 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.Group?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.VBox?>
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
 			fx:controller="org.uichuimi.variant.viewer.components.VariantsTable">
 	<center>
-		<SplitPane fx:id="center" dividerPositions="0.15,0.85"
-				   style="-fx-border-width: 0 0 0 2; -fx-border-color: -fx-light-color">
-			<!-- Left -->
-			<SplitPane fx:id="filtersDataPane" orientation="VERTICAL">
-				<VBox fx:id="propertyFiltersPane">
-					<VBox styleClass="section-title">
-						<Label text="FILTERS (PROPERTIES)"/>
-					</VBox>
-					<fx:include fx:id="propertyFilters" source="property-filters.fxml"/>
-				</VBox>
-				<VBox fx:id="genotypeFiltersPane">
-					<VBox styleClass="section-title">
-						<Label text="FILTERS (GENOTYPES)"/>
-					</VBox>
-					<fx:include VBox.vgrow="ALWAYS" fx:id="genotypeFilters" source="genotype-filters.fxml"/>
-				</VBox>
-			</SplitPane>
+		<SplitPane dividerPositions="0.15,0.85" style="-fx-border-width: 0 0 0 2; -fx-border-color: -fx-light-color">
+			<fx:include source="variant-filters.fxml" fx:id="variantFilters" />
 			<!-- Center -->
 			<VBox>
 				<VBox styleClass="section-title">
@@ -54,17 +40,4 @@
 			<fx:include source="variant-details.fxml" fx:id="variantDetails"/>
 		</SplitPane>
 	</center>
-	<left>
-		<FlowPane orientation="VERTICAL">
-			<Group>
-				<ToggleButton rotate="90" text="PROPERTIES" fx:id="showPropertyFilters" selected="true"
-							  style="-fx-font-size: 0.8em"/>
-			</Group>
-			<Group>
-				<ToggleButton rotate="90" text="GENOTYPES" fx:id="showGenotypeFilters" selected="true"
-							  style="-fx-font-size: 0.8em"/>
-			</Group>
-		</FlowPane>
-	</left>
-
 </BorderPane>

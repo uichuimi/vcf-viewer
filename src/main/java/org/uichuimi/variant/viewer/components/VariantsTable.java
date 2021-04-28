@@ -8,11 +8,12 @@ import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import org.uichuimi.variant.viewer.filter.Filter;
+import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.BorderPane;
 import org.uichuimi.variant.viewer.filter.VariantContextFilter;
 import org.uichuimi.variant.viewer.index.Indexer;
 import org.uichuimi.variant.viewer.index.VcfIndex;
@@ -30,31 +31,21 @@ import java.util.stream.Collectors;
 public class VariantsTable {
 
 	@FXML
-	@SuppressWarnings({"unused"})
+	@SuppressWarnings("unused")
+	private BorderPane variantFilters;
+	@FXML
+	@SuppressWarnings("unused")
+	private VariantFilters variantFiltersController;
+	@FXML
+	@SuppressWarnings("unused")
+	private BorderPane variantDetails;
+	@FXML
+	@SuppressWarnings("unused")
 	private VariantDetails variantDetailsController;
-	@FXML
-	private VBox propertyFiltersPane;
-	@FXML
-	private VBox genotypeFiltersPane;
-	@FXML
-	private SplitPane filtersDataPane;
-	@FXML
-	private ToggleButton showPropertyFilters;
-	@FXML
-	private ToggleButton showGenotypeFilters;
-	@FXML
-	private SplitPane center;
 	@FXML
 	private Label totalVariants;
 	@FXML
 	private Label filteredVariants;
-	@FXML
-	@SuppressWarnings({"unused"})
-	private PropertyFilters propertyFiltersController;
-	@FXML
-	@SuppressWarnings({"unused"})
-	private GenotypeFilters genotypeFiltersController;
-
 	@FXML
 	private TableView<VariantContext> variantsTable;
 	@FXML
@@ -107,8 +98,7 @@ public class VariantsTable {
 		final Indexer indexer = new Indexer(file);
 		indexer.setOnSucceeded(workerStateEvent -> {
 			index = indexer.getValue();
-			propertyFiltersController.setMetadata(index);
-			genotypeFiltersController.setMetadata(index);
+			variantFiltersController.setMetadata(index);
 			totalVariants.setText("Total variants: %,d".formatted(index.getLineCount()));
 		});
 		indexer.setOnFailed(event -> MainView.error(indexer.getException()));
@@ -119,8 +109,7 @@ public class VariantsTable {
 		try (VCFFileReader reader = new VCFFileReader(file, false)) {
 			final VCFHeader header = reader.getHeader();
 			header.getInfoHeaderLines().stream().map(this::createInfoColumn).forEach(variantsTable.getColumns()::add);
-			propertyFiltersController.setMetadata(header);
-			genotypeFiltersController.setMetadata(header);
+			variantFiltersController.setMetadata(header);
 		} catch (Exception e) {
 			e.printStackTrace();
 			MainView.error(e);
@@ -135,7 +124,7 @@ public class VariantsTable {
 		variantsTable.getItems().clear();
 		if (reader != null) reader.cancel();
 		final Long lineCount = index == null ? null : index.getLineCount();
-		final List<VariantContextFilter> filterList = List.of(genotypeFiltersController.getFilter(), propertyFiltersController.getFilter());
+		final List<VariantContextFilter> filterList = variantFiltersController.getFilters();
 		reader = new VariantContextPipe(file, output, filterList, 2000, lineCount);
 		reader.filteredProperty().addListener((obs, old, filtered) -> updateFiltered(filtered.intValue()));
 		variantsTable.setItems(reader.getVariants());
@@ -173,45 +162,9 @@ public class VariantsTable {
 		variantsTable.getSelectionModel().selectedItemProperty().addListener((obs, prev, variant) -> select(variant));
 		variantsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		variantsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		propertyFiltersController.filterList().addListener((ListChangeListener<Filter>) change -> Platform.runLater(this::reload));
-		genotypeFiltersController.setOnFilter(() -> Platform.runLater(this::reload));
-		showPropertyFilters.selectedProperty().addListener((ons, prev, selected) -> showPropertyFilters(selected));
-		showGenotypeFilters.selectedProperty().addListener((ons, prev, selected) -> showGenotypeFilters(selected));
-
+		variantFiltersController.setOnReload(() -> Platform.runLater(this::reload));
 	}
 
-
-	private void showPropertyFilters(Boolean selected) {
-		if (selected) {
-			if (!filtersDataPane.getItems().contains(propertyFiltersPane)) {
-				filtersDataPane.getItems().add(0, propertyFiltersPane);
-			}
-		} else {
-			filtersDataPane.getItems().remove(propertyFiltersPane);
-		}
-		hideOrShowFiltersPane();
-	}
-
-	private void showGenotypeFilters(Boolean selected) {
-		if (selected) {
-			if (!filtersDataPane.getItems().contains(genotypeFiltersPane)) {
-				filtersDataPane.getItems().add(genotypeFiltersPane);
-			}
-		} else {
-			filtersDataPane.getItems().remove(genotypeFiltersPane);
-		}
-		hideOrShowFiltersPane();
-	}
-
-	private void hideOrShowFiltersPane() {
-		if (filtersDataPane.getItems().isEmpty()) {
-			center.getItems().remove(filtersDataPane);
-		} else {
-			if (!center.getItems().contains(filtersDataPane)) {
-				center.getItems().add(0, filtersDataPane);
-			}
-		}
-	}
 
 	private void select(final VariantContext variant) {
 		variantDetailsController.set(variant);

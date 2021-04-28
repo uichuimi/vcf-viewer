@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="https://javafx.com/javafx"
+			xmlns:fx="http://javafx.com/fxml"
+			fx:controller="org.uichuimi.variant.viewer.components.VariantFilters"
+			fx:id="root">
+	<center>
+		<SplitPane fx:id="content" orientation="VERTICAL">
+			<VBox fx:id="propertyFiltersPane">
+				<VBox styleClass="section-title">
+					<Label text="FILTERS (PROPERTIES)"/>
+				</VBox>
+				<fx:include fx:id="propertyFilters" source="property-filters.fxml"/>
+			</VBox>
+			<VBox fx:id="genotypeFiltersPane">
+				<VBox styleClass="section-title">
+					<Label text="FILTERS (GENOTYPES)"/>
+				</VBox>
+				<fx:include VBox.vgrow="ALWAYS" fx:id="genotypeFilters" source="genotype-filters.fxml"/>
+			</VBox>
+		</SplitPane>
+
+
+	</center>
+	<left>
+		<FlowPane fx:id="showing" orientation="VERTICAL"/>
+	</left>
+
+</BorderPane>
