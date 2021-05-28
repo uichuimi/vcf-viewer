@@ -46,6 +46,9 @@ public class FrequenciesTable {
 
 	public void select(VariantContext variant) {
 		frequencies.getItems().clear();
+		if (variant == null) {
+			return;
+		}
 		for (FrequencyFactory factory : factories) {
 			final Frequency frequency = factory.build(variant);
 			if (frequency != null) {
