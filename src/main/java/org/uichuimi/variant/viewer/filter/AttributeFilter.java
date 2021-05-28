@@ -1,11 +1,12 @@
 package org.uichuimi.variant.viewer.filter;
 
+import htsjdk.samtools.util.Interval;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.uichuimi.variant.viewer.components.Accessor;
 
 import java.util.Collection;
 
-public class Filter implements BaseFilter {
+public class AttributeFilter implements BaseFilter {
 	/*
 	 * field		| accessor	| operator		| value
 	 * ------------ | --------- | ------------- | ----------
@@ -34,13 +35,15 @@ public class Filter implements BaseFilter {
 	private final Operator operator;
 	private final Object value;
 	private final boolean strict;
+	private final Collection<Interval> interval;
 
-	public Filter(final Field field, final Accessor accessor, final Operator operator, final Object value, boolean strict) {
+	public AttributeFilter(final Field field, final Accessor accessor, final Operator operator, final Object value, boolean strict, Collection<Interval> interval) {
 		this.field = field;
 		this.accessor = accessor;
 		this.operator = operator;
 		this.value = value;
 		this.strict = strict;
+		this.interval = interval;
 	}
 
 	public Field getField() {
@@ -63,9 +66,9 @@ public class Filter implements BaseFilter {
 		return strict;
 	}
 
+	@Override
 	public boolean filter(VariantContext variant) {
 		final Object value = field.extract(variant);
-		if (value == null) return !strict;
 		return filter(this.value, value);
 	}
 
@@ -76,10 +79,12 @@ public class Filter implements BaseFilter {
 		if (queryValue instanceof Collection) {
 			return filter(thisValue, (Collection<?>) queryValue);
 		}
+		if (queryValue == null) return !strict;
 		return operator.query(queryValue, thisValue);
 	}
 
 	private boolean filter(final Object thisValue, final Collection<?> queryValue) {
+		if (queryValue.isEmpty()) return !strict;
 		return switch (accessor) {
 			case ALL -> queryValue.stream().allMatch(val -> filter(thisValue, val));
 			case NONE -> queryValue.stream().noneMatch(val -> filter(thisValue, val));
@@ -92,14 +97,8 @@ public class Filter implements BaseFilter {
 	}
 
 	@Override
-	public String toString() {
-		return "Filter{" +
-			"field=" + field +
-			", accessor=" + accessor +
-			", operator=" + operator +
-			", value=" + value +
-			", strict=" + strict +
-			'}';
+	public Collection<Interval> getInterval() {
+		return interval;
 	}
 
 	@Override
@@ -115,5 +114,16 @@ public class Filter implements BaseFilter {
 			builder.append(" (strict)");
 		}
 		return builder.toString();
+	}
+
+	@Override
+	public String toString() {
+		return "Filter{" +
+			"field=" + field +
+			", accessor=" + accessor +
+			", operator=" + operator +
+			", value=" + value +
+			", strict=" + strict +
+			'}';
 	}
 }
