@@ -2,7 +2,6 @@ package org.uichuimi.variant.viewer.filter;
 
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFConstants;
 import org.uichuimi.variant.viewer.utils.Constants;
 
 import java.io.IOException;
@@ -31,19 +30,7 @@ public class Field implements Serializable {
 		this.category = category;
 		this.name = name;
 		this.list = list;
-		this.extractor = createExtractorMain();
-	}
-
-	private Function<VariantContext, Object> createExtractorMain() {
-		final Function<VariantContext, Object> extractor = createExtractor();
-		return variantContext -> {
-			final Object attribute = variantContext.getAttribute(name);
-			if (attribute == null || attribute.equals(VCFConstants.EMPTY_ID_FIELD)) {
-				return null;
-			} else {
-				return extractor.apply(variantContext);
-			}
-		};
+		this.extractor = createExtractor();
 	}
 
 	private Function<VariantContext, Object> createExtractor() {
@@ -120,7 +107,7 @@ public class Field implements Serializable {
 	private void readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
 		// perform the default de-serialization first
 		inputStream.defaultReadObject();
-		extractor = createExtractorMain();
+		extractor = createExtractor();
 	}
 
 	public enum Category {
