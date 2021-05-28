@@ -15,6 +15,7 @@ import org.uichuimi.variant.viewer.filter.FieldBuilder;
 import org.uichuimi.variant.viewer.utils.Chromosome;
 import org.uichuimi.variant.viewer.utils.Constants;
 import org.uichuimi.variant.viewer.utils.GenomeProgress;
+import org.uichuimi.variant.viewer.utils.ResourceConsumer;
 
 import java.io.*;
 import java.util.*;
@@ -29,8 +30,7 @@ public class Indexer extends Task<VcfIndex> {
 	}
 
 	@Override
-	protected VcfIndex call() throws Exception {
-		maybeTabix();
+	protected VcfIndex call() {
 		final File indexFile = new File(file.getAbsolutePath() + ".vcf-index");
 		if (indexFile.exists()) {
 			updateMessage("Reading index");
@@ -50,48 +50,92 @@ public class Indexer extends Task<VcfIndex> {
 		return index;
 	}
 
-	private VcfIndex createIndex() throws Exception {
-		final Map<String, Set<String>> options = new TreeMap<>();
-		final Set<String> contigs = new LinkedHashSet<>();
-		final Set<String> filters = new LinkedHashSet<>();
+	private VcfIndex createIndex() {
+		final Collection<ResourceConsumer<VCFHeader, VariantContext>> consumers = new ArrayList<>();
+		final ViewerIndexCreator indexCreator = new ViewerIndexCreator();
+		consumers.add(indexCreator);
+		// Optionally, create TBI
+		if (needsIndex()) {
+			consumers.add(new TabixCreator(file));
+		}
 		long lineCount = 0;
-		final VCFHeader header;
-		String zipFile = file.getAbsolutePath() + ".gtbit";
-		try (VCFFileReader reader = new VCFFileReader(file, false);
-		     GtBitsetArchiveBuilder gtBitsetArchiveBuilder = new GtBitsetArchiveBuilder(new File(zipFile), reader.getHeader())) {
-			header = reader.getHeader();
-			//  4 -> number of possible genotypes
-			// 64 -> number of bits in a long
+		try (VCFFileReader reader = new VCFFileReader(file, false)) {
+			final VCFHeader header = reader.getHeader();
+			for (ResourceConsumer<VCFHeader, VariantContext> consumer : consumers) {
+				consumer.start(header);
+			}
 			final Chromosome.Namespace namespace = Chromosome.Namespace.guess(reader.getHeader());
-			reader.getHeader().getInfoHeaderLines().stream()
-				.filter(line -> line.getType() == VCFHeaderLineType.String)
-				.forEach(line -> options.put(line.getID(), new TreeSet<>()));
 			for (final VariantContext variant : reader) {
-				// Add new options
-				contigs.add(variant.getContig());
-				filters.addAll(variant.getFilters());
-				for (final String id : options.keySet()) {
-					final Set<String> set = options.get(id);
-					final Collection<String> value = variant.getCommonInfo().getAttributeAsStringList(id, null);
-					if (value == null) continue;
-					for (String val : value) {
-						if (val != null) {
-							set.add(val);
-						}
-					}
+				for (ResourceConsumer<VCFHeader, VariantContext> consumer : consumers) {
+					consumer.consume(variant, lineCount);
 				}
-				// Check too long options
-				for (final String id : new ArrayList<>(options.keySet())) {
-					if (options.get(id).size() > LIMIT) {
-						options.remove(id);
-					}
-				}
-				gtBitsetArchiveBuilder.addSite(variant);
 				if (lineCount++ % 1000 == 0) {
 					updateProgress(GenomeProgress.getProgress(variant, namespace), 1);
 					updateMessage("Indexing " + variant.getContig() + " : " + variant.getStart());
 				}
 			}
+			for (ResourceConsumer<VCFHeader, VariantContext> consumer : consumers) {
+				consumer.finnish(lineCount);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return indexCreator.get();
+	}
+
+	private boolean needsIndex() {
+		boolean needsIndex = true;
+		try (VCFFileReader ignored = new VCFFileReader(file)) {
+			needsIndex = false;
+		} catch (TribbleException ignored) {
+		}
+		return needsIndex;
+	}
+
+	private static class ViewerIndexCreator implements ResourceConsumer<VCFHeader, VariantContext> {
+
+		private final Map<String, Set<String>> options = new TreeMap<>();
+		private final Set<String> contigs = new LinkedHashSet<>();
+		private final Set<String> filters = new LinkedHashSet<>();
+		private Chromosome.Namespace namespace;
+		private VCFHeader header;
+		private VcfIndex index;
+
+		@Override
+		public void start(VCFHeader header) {
+			this.header = header;
+			namespace = Chromosome.Namespace.guess(header);
+			header.getInfoHeaderLines().stream()
+				.filter(line -> line.getType() == VCFHeaderLineType.String)
+				.forEach(line -> options.put(line.getID(), new TreeSet<>()));
+
+		}
+
+		@Override
+		public void consume(VariantContext variantContext, long position) {
+			contigs.add(variantContext.getContig());
+			filters.addAll(variantContext.getFilters());
+			for (final String id : options.keySet()) {
+				final Set<String> set = options.get(id);
+				final Collection<String> value = variantContext.getCommonInfo().getAttributeAsStringList(id, null);
+				if (value == null) continue;
+				for (String val : value) {
+					if (val != null) {
+						set.add(val);
+					}
+				}
+			}
+			// Check too long options
+			for (final String id : new ArrayList<>(options.keySet())) {
+				if (options.get(id).size() > LIMIT) {
+					options.remove(id);
+				}
+			}
+
+		}
+
+		@Override
+		public void finnish(long position) throws Exception {
 			final List<Field> fields = new ArrayList<>(
 				List.of(chromField(new ArrayList<>(contigs)),
 					posField(), qualField(), idField(),
@@ -100,55 +144,61 @@ public class Indexer extends Task<VcfIndex> {
 			for (final VCFInfoHeaderLine line : header.getInfoHeaderLines()) {
 				fields.add(toField(line, options.getOrDefault(line.getID(), Set.of())));
 			}
-			return new VcfIndex(fields, lineCount, gtBitsetArchiveBuilder.getArchive(), header.getGenotypeSamples());
+			index = new VcfIndex(fields, position);
 		}
-	}
 
-	private void maybeTabix() throws IOException {
-		boolean needsIndex = true;
-		try (VCFFileReader reader = new VCFFileReader(file, true)) {
-			needsIndex = false;
-		} catch (TribbleException ignored) {
+		VcfIndex get() {
+			return index;
 		}
-		if (!needsIndex) return;
-		updateMessage("Creating tabix index");
-		long pos = 0;
-		try (VCFFileReader reader = new VCFFileReader(file, false)) {
-			final TabixIndexCreator tabixIndexCreator = new TabixIndexCreator(TabixFormat.VCF);
-			tabixIndexCreator.setIndexSequenceDictionary(reader.getHeader().getSequenceDictionary());
-			int i = 0;
-			for (final VariantContext variant : reader) {
-				tabixIndexCreator.addFeature(variant, pos++);
-				if (i++ % 1000 == 0)
-					updateMessage("Creating tabix index (%s:%,d)".formatted(variant.getContig(), variant.getStart()));
-			}
-			final Index index = tabixIndexCreator.finalizeIndex(pos);
-			index.writeBasedOnFeatureFile(file);
+
+		private Field chromField(List<String> contigs) {
+			return new Field(Field.Type.TEXT, contigs, Constants.CHROM, false, Field.Category.STANDARD);
 		}
+
+		private Field posField() {
+			return new Field(Field.Type.INTEGER, List.of(), Constants.POS, false, Field.Category.STANDARD);
+		}
+
+		private Field qualField() {
+			return new Field(Field.Type.FLOAT, List.of(), Constants.QUAL, false, Field.Category.STANDARD);
+		}
+
+		private Field idField() {
+			return new Field(Field.Type.TEXT, List.of(), Constants.ID, false, Field.Category.STANDARD);
+		}
+
+		private Field filterField(final List<String> filters) {
+			return new Field(Field.Type.TEXT, filters, Constants.FILTER, true, Field.Category.STANDARD);
+		}
+
+		private Field toField(final VCFInfoHeaderLine line, final Set<String> options) {
+			return FieldBuilder.create(line, new ArrayList<>(options));
+		}
+
 	}
 
+	private static class TabixCreator implements ResourceConsumer<VCFHeader, VariantContext> {
 
-	private Field chromField(List<String> contigs) {
-		return new Field(Field.Type.TEXT, contigs, Constants.CHROM, false, Field.Category.STANDARD);
-	}
+		private final TabixIndexCreator tabixIndexCreator = new TabixIndexCreator(TabixFormat.VCF);
+		private final File vcfFile;
 
-	private Field posField() {
-		return new Field(Field.Type.INTEGER, List.of(), Constants.POS, false, Field.Category.STANDARD);
-	}
+		private TabixCreator(File vcfFile) {this.vcfFile = vcfFile;}
 
-	private Field qualField() {
-		return new Field(Field.Type.FLOAT, List.of(), Constants.QUAL, false, Field.Category.STANDARD);
-	}
+		@Override
+		public void start(VCFHeader vcfHeader) {
+			tabixIndexCreator.setIndexSequenceDictionary(vcfHeader.getSequenceDictionary());
+		}
 
-	private Field idField() {
-		return new Field(Field.Type.TEXT, List.of(), Constants.ID, false, Field.Category.STANDARD);
-	}
+		@Override
+		public void consume(VariantContext variantContext, long position) {
+			tabixIndexCreator.addFeature(variantContext, position);
+		}
 
-	private Field filterField(final List<String> filters) {
-		return new Field(Field.Type.TEXT, filters, Constants.FILTER, true, Field.Category.STANDARD);
-	}
+		@Override
+		public void finnish(long position) throws IOException {
+			final Index index = tabixIndexCreator.finalizeIndex(position);
+			index.writeBasedOnFeatureFile(vcfFile);
+		}
 
-	private Field toField(final VCFInfoHeaderLine line, final Set<String> options) {
-		return FieldBuilder.create(line, new ArrayList<>(options));
 	}
 }
