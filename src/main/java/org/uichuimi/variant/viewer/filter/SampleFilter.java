@@ -1,14 +1,17 @@
 package org.uichuimi.variant.viewer.filter;
 
+import htsjdk.samtools.util.Interval;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.uichuimi.variant.viewer.components.Accessor;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class SampleFilter implements BaseFilter {
+
 	private final List<String> samples;
 	private final List<GenotypeType> types;
 	private final Accessor accessor;
@@ -43,5 +46,10 @@ public class SampleFilter implements BaseFilter {
 			.append(accessor == Accessor.ALL || number > 1 ? " are " : " is ")
 			.append(types);
 		return result.toString();
+	}
+
+	@Override
+	public Collection<Interval> getInterval() {
+		return null;
 	}
 }

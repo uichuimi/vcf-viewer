@@ -14,7 +14,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
-import org.uichuimi.variant.viewer.filter.VariantContextFilter;
+import org.uichuimi.variant.viewer.filter.BaseFilter;
 import org.uichuimi.variant.viewer.index.Indexer;
 import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.io.VariantContextPipe;
@@ -125,7 +125,7 @@ public class VariantsTable {
 		variantsTable.getItems().clear();
 		if (reader != null) reader.cancel();
 		final Long lineCount = index == null ? null : index.getLineCount();
-		final List<VariantContextFilter> filterList = variantFiltersController.getFilters();
+		final List<BaseFilter> filterList = variantFiltersController.getFilters();
 		reader = new VariantContextPipe(file, output, filterList, 2000, lineCount);
 		reader.filteredProperty().addListener((obs, old, filtered) -> updateFiltered(filtered.intValue()));
 		variantsTable.setItems(reader.getVariants());

@@ -3,12 +3,12 @@ package org.uichuimi.variant.viewer.components;
 import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.vcf.VCFHeader;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import org.controlsfx.control.CheckComboBox;
 import org.uichuimi.variant.viewer.filter.SampleFilter;
-import org.uichuimi.variant.viewer.filter.VariantContextFilter;
 import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.utils.NoArgFunction;
 
@@ -59,9 +59,8 @@ public class GenotypeFilters {
 
 	}
 
-	public VariantContextFilter getFilter() {
-		final List<SampleFilter> filters = List.copyOf(this.filters.getItems());
-		return variant -> filters.stream().allMatch(f -> f.filter(variant));
+	public ObservableList<SampleFilter> getFilters() {
+		return filters.getItems();
 	}
 
 	public void add() {

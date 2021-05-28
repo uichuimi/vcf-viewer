@@ -1,5 +1,6 @@
 package org.uichuimi.variant.viewer.components;
 
+import htsjdk.samtools.util.Interval;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFContigHeaderLine;
 import htsjdk.variant.vcf.VCFHeader;
@@ -15,9 +16,7 @@ import org.uichuimi.variant.viewer.filter.*;
 import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.utils.Constants;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PropertyFilters {
@@ -43,7 +42,7 @@ public class PropertyFilters {
 	@FXML
 	private ComboBox<Operator> operator;
 	@FXML
-	private ListView<Filter> filters;
+	private ListView<AttributeFilter> filters;
 
 	private VCFHeader header;
 
@@ -110,7 +109,7 @@ public class PropertyFilters {
 		this.field.getItems().setAll(index.getFields());
 	}
 
-	public ObservableList<Filter> filterList() {
+	public ObservableList<AttributeFilter> filterList() {
 		return filters.getItems();
 	}
 
@@ -143,9 +142,32 @@ public class PropertyFilters {
 		} else if (field.getValue().getType() == Field.Type.FLAG) {
 			value = false;
 		} else return;
-		final Filter filter = new Filter(field.getValue(), accessor.getValue(), operator.getValue(), value, strict.isSelected());
+
+		final Collection<Interval> intervals = createInterval(field.getValue(), value);
+		final AttributeFilter filter = new AttributeFilter(field.getValue(), accessor.getValue(), operator.getValue(), value, strict.isSelected(), intervals);
 		System.out.println(filter);
 		filters.getItems().add(filter);
+	}
+
+	private Collection<Interval> createInterval(Field field, Object value) {
+		final Collection<Interval> intervals = new LinkedHashSet<>();
+		if (field.getCategory() == Field.Category.STANDARD && field.getName().equals(Constants.CHROM)) {
+			final Collection<String> chroms = (Collection<String>) value;
+			for (String chrom : chroms) {
+				for (VCFContigHeaderLine line : header.getContigLines()) {
+					if (line.getID().equals(chrom)) {
+						intervals.add(createInterval(line));
+					}
+				}
+			}
+		}
+		return List.copyOf(intervals);
+	}
+
+	private Interval createInterval(VCFContigHeaderLine line) {
+		final String lengthString = line.getGenericFields().get("length");
+		final int length = lengthString == null ? 0 : Integer.parseInt(lengthString);
+		return new Interval(line.getID(), 1, length);
 	}
 
 	@FXML
@@ -193,6 +215,11 @@ public class PropertyFilters {
 
 	private void updateOptions() {
 		final Field field = this.field.getValue();
+		if (field == null) {
+			accessor.setDisable(true);
+			operator.setDisable(true);
+			valueHolder.getChildren().clear();
+		}
 		// Enable/disable accessor
 		accessor.setDisable(!field.isList());
 

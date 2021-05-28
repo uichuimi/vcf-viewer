@@ -9,11 +9,12 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
-import org.uichuimi.variant.viewer.filter.Filter;
-import org.uichuimi.variant.viewer.filter.VariantContextFilter;
+import org.uichuimi.variant.viewer.filter.AttributeFilter;
+import org.uichuimi.variant.viewer.filter.BaseFilter;
 import org.uichuimi.variant.viewer.index.VcfIndex;
 import org.uichuimi.variant.viewer.utils.NoArgFunction;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VariantFilters {
@@ -47,7 +48,7 @@ public class VariantFilters {
 
 	@FXML
 	private void initialize() {
-		propertyFiltersController.filterList().addListener((ListChangeListener<Filter>) change -> onReload.call());
+		propertyFiltersController.filterList().addListener((ListChangeListener<AttributeFilter>) change -> onReload.call());
 		genotypeFiltersController.setOnFilter(() -> onReload.call());
 
 		panes = List.of(
@@ -91,8 +92,11 @@ public class VariantFilters {
 		genotypeFiltersController.setMetadata(header);
 	}
 
-	public List<VariantContextFilter> getFilters() {
-		return List.of(genotypeFiltersController.getFilter(), propertyFiltersController.getFilter());
+	public List<BaseFilter> getFilters() {
+		final ArrayList<BaseFilter> filters = new ArrayList<>();
+		filters.addAll(genotypeFiltersController.getFilters());
+		filters.addAll(propertyFiltersController.filterList());
+		return filters;
 	}
 
 	public void setOnReload(NoArgFunction onReload) {

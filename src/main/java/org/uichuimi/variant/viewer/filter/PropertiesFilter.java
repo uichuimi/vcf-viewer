@@ -6,9 +6,9 @@ import java.util.Collection;
 
 public class PropertiesFilter implements VariantContextFilter {
 
-	private final Collection<Filter> es;
+	private final Collection<AttributeFilter> es;
 
-	public PropertiesFilter(Collection<Filter> es) {
+	public PropertiesFilter(Collection<AttributeFilter> es) {
 		this.es = es;
 	}
 
