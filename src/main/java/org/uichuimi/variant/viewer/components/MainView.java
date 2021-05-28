@@ -1,5 +1,6 @@
 package org.uichuimi.variant.viewer.components;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
@@ -41,6 +42,9 @@ public class MainView {
 	}
 
 	public static void error(String message) {
+		Platform.runLater(() -> errorFx(message));
+	}
+	private static void errorFx(String message) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle("Error");
 		alert.setHeaderText(null);
@@ -49,6 +53,9 @@ public class MainView {
 	}
 
 	public static void error(Throwable e) {
+		Platform.runLater(() -> errorFx(e));
+	}
+	private static void errorFx(Throwable e) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle("Error");
 		alert.setHeaderText(null);
