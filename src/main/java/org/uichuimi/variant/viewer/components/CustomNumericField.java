@@ -48,6 +48,9 @@ public class CustomNumericField extends VBox {
 			value.addListener(listener);
 			updateView();
 		});
+		textField.setOnKeyTyped(event -> {
+			parseValue();
+		});
 	}
 	public CustomNumericField() {
 		this(null);
@@ -175,6 +178,7 @@ public class CustomNumericField extends VBox {
 		} else {
 			final String text = format.format(value.getValue());
 			textField.setText(text);
+			textField.positionCaret(text.length());
 		}
 	}
 }
